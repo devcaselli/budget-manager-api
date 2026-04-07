@@ -11,6 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public interface SaveExpenseEntrypoint {
 
 
-    @PostMapping()
-    ResponseEntity<ExpenseResponseDto> save(@RequestBody  ExpenseRequestDto expenseRequestDto);
+    @PostMapping
+    ResponseEntity<ExpenseResponseDto> save(@RequestBody ExpenseRequestDto expenseRequestDto);
 }

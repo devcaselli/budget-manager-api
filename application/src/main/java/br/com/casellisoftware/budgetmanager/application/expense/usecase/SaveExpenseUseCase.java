@@ -9,7 +9,8 @@ import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static br.com.casellisoftware.budgetmanager.application.configs.ApplicationConstants.SAVE_EXPENSE;
+import static br.com.casellisoftware.budgetmanager.application.configs.ApplicationConstants.SAVE_EXPENSE_START;
+import static br.com.casellisoftware.budgetmanager.application.configs.ApplicationConstants.SAVE_EXPENSE_SUCCESS;
 
 
 public class SaveExpenseUseCase implements SaveExpenseBoundary {
@@ -27,9 +28,10 @@ public class SaveExpenseUseCase implements SaveExpenseBoundary {
 
     @Override
     public ExpenseOutput execute(ExpenseInput input) {
-        log.info(SAVE_EXPENSE, input);
+        log.info(SAVE_EXPENSE_START, input.walletId());
         Expense domain = this.mapper.mapToDomain(input);
         domain = this.expenseRepository.save(domain);
+        log.info(SAVE_EXPENSE_SUCCESS, domain.getId());
         return this.mapper.mapToOutput(domain);
     }
 }

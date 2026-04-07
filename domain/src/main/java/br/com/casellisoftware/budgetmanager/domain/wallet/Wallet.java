@@ -1,13 +1,13 @@
 package br.com.casellisoftware.budgetmanager.domain.wallet;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public class Wallet {
 
     private String id;
-    private LocalDateTime date;
-    private LocalDateTime closedDate;
+    private Instant date;
+    private Instant closedDate;
     private Boolean closed;
     private BigDecimal amount;
     private BigDecimal remaining;
@@ -15,7 +15,7 @@ public class Wallet {
     public Wallet() {
     }
 
-    public Wallet(String id, LocalDateTime date, LocalDateTime closedDate, Boolean closed, BigDecimal amount, BigDecimal remaining) {
+    public Wallet(String id, Instant date, Instant closedDate, Boolean closed, BigDecimal amount, BigDecimal remaining) {
         this.id = id;
         this.date = date;
         this.closedDate = closedDate;
@@ -32,19 +32,19 @@ public class Wallet {
         this.id = id;
     }
 
-    public LocalDateTime getDate() {
+    public Instant getDate() {
         return date;
     }
 
-    public void setDate(LocalDateTime date) {
+    public void setDate(Instant date) {
         this.date = date;
     }
 
-    public LocalDateTime getClosedDate() {
+    public Instant getClosedDate() {
         return closedDate;
     }
 
-    public void setClosedDate(LocalDateTime closedDate) {
+    public void setClosedDate(Instant closedDate) {
         this.closedDate = closedDate;
     }
 

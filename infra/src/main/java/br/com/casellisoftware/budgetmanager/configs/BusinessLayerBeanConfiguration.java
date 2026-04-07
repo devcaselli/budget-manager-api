@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class BusinessLayerBeanConfiguration {
 
     @Bean
-    public SaveExpenseUseCase  saveExpenseUseCase(ExpenseRepository repository, ExpenseApplicationMapper mapper) {
+    public SaveExpenseUseCase saveExpenseUseCase(ExpenseRepository repository, ExpenseApplicationMapper mapper) {
         return new SaveExpenseUseCase(mapper, repository);
     }
 }

@@ -1,6 +1,10 @@
 package br.com.casellisoftware.budgetmanager.application.configs;
 
-public class ApplicationConstants {
+public final class ApplicationConstants {
 
-    public static final String SAVE_EXPENSE = "Saving expense, data: {}";
+    public static final String SAVE_EXPENSE_START = "Saving expense for walletId={}";
+    public static final String SAVE_EXPENSE_SUCCESS = "Expense saved successfully, id={}";
+
+    private ApplicationConstants() {
+    }
 }
