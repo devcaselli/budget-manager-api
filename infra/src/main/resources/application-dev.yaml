@@ -1,0 +1,5 @@
+spring:
+  mongodb:
+    uri: mongodb://admin:admin@localhost:27017/budgetmanager?authSource=admin
+api:
+  base-path: /api
