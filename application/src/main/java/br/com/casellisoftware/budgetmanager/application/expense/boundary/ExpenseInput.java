@@ -1,27 +1,17 @@
 package br.com.casellisoftware.budgetmanager.application.expense.boundary;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Objects;
+import java.time.LocalDate;
 
+/**
+ * Input DTO for the save-expense use case. Carries raw primitive types from the
+ * interface adapter layer; canonical validation happens when the use case calls
+ * {@code Expense.create(...)}.
+ */
 public record ExpenseInput(
         String name,
         BigDecimal cost,
-        Instant purchaseDate,
+        LocalDate purchaseDate,
         String walletId
 ) {
-    public ExpenseInput {
-        Objects.requireNonNull(name, "name must not be null");
-        if (name.isBlank()) {
-            throw new IllegalArgumentException("name must not be blank");
-        }
-        Objects.requireNonNull(cost, "cost must not be null");
-        if (cost.signum() <= 0) {
-            throw new IllegalArgumentException("cost must be positive");
-        }
-        Objects.requireNonNull(walletId, "walletId must not be null");
-        if (walletId.isBlank()) {
-            throw new IllegalArgumentException("walletId must not be blank");
-        }
-    }
 }

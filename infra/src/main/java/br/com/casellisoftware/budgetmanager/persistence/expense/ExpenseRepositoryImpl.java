@@ -20,20 +20,20 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
     @Override
     public List<Expense> findAllByWalletId(String walletId) {
         return this.expenseMongoRepository.findAllByWalletId(walletId)
-                .stream().map(mapper::expenseDocumentToExpense)
+                .stream().map(mapper::toDomain)
                 .toList();
     }
 
     @Override
     public Optional<Expense> findById(String id) {
         return this.expenseMongoRepository.findById(id)
-                .map(mapper::expenseDocumentToExpense);
+                .map(mapper::toDomain);
     }
 
     @Override
     public Expense save(Expense expense) {
-        ExpenseDocument saved = this.expenseMongoRepository.save(mapper.expenseDomainToExpenseDocument(expense));
-        return mapper.expenseDocumentToExpense(saved);
+        ExpenseDocument saved = this.expenseMongoRepository.save(mapper.toDocument(expense));
+        return mapper.toDomain(saved);
     }
 
     @Override
@@ -55,9 +55,9 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
         if (!this.expenseMongoRepository.existsById(expenseId)) {
             throw new ExpenseNotFoundException(expenseId);
         }
-        ExpenseDocument document = mapper.expenseDomainToExpenseDocument(updatedExpense);
+        ExpenseDocument document = mapper.toDocument(updatedExpense);
         document.setId(expenseId);
         ExpenseDocument saved = this.expenseMongoRepository.save(document);
-        return mapper.expenseDocumentToExpense(saved);
+        return mapper.toDomain(saved);
     }
 }

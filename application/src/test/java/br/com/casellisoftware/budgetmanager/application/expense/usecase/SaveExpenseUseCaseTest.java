@@ -2,26 +2,21 @@ package br.com.casellisoftware.budgetmanager.application.expense.usecase;
 
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseInput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
-import br.com.casellisoftware.budgetmanager.application.mappers.ExpenseApplicationMapper;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
-import org.mockito.InjectMocks;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -29,61 +24,62 @@ import static org.mockito.Mockito.when;
 class SaveExpenseUseCaseTest {
 
     @Mock
-    private ExpenseApplicationMapper mapper;
-
-    @Mock
     private ExpenseRepository expenseRepository;
 
     private SaveExpenseUseCase useCase;
 
     private ExpenseInput input;
-    private Expense domain;
-    private Expense saved;
-    private ExpenseOutput output;
 
     @BeforeEach
     void setUp() {
-        useCase = new SaveExpenseUseCase(mapper, expenseRepository);
-
-        input = new ExpenseInput("lunch", new BigDecimal("25.50"), Instant.parse("2026-04-07T12:00:00Z"), "wallet-1");
-        domain = new Expense(null, "lunch", new BigDecimal("25.50"), Instant.parse("2026-04-07T12:00:00Z"), null, "wallet-1");
-        saved = new Expense("expense-1", "lunch", new BigDecimal("25.50"), Instant.parse("2026-04-07T12:00:00Z"), null, "wallet-1");
-        output = new ExpenseOutput("expense-1", "lunch", new BigDecimal("25.50"), Instant.parse("2026-04-07T12:00:00Z"), "wallet-1", null);
+        useCase = new SaveExpenseUseCase(expenseRepository);
+        input = new ExpenseInput(
+                "lunch",
+                new BigDecimal("25.50"),
+                LocalDate.now().minusDays(1),
+                "wallet-1"
+        );
     }
 
     @Test
-    void execute_happyPath_mapsPersistsAndReturnsOutput() {
-        when(mapper.mapToDomain(input)).thenReturn(domain);
-        when(expenseRepository.save(domain)).thenReturn(saved);
-        when(mapper.mapToOutput(saved)).thenReturn(output);
+    void execute_happyPath_createsDomainPersistsAndReturnsOutput() {
+        when(expenseRepository.save(any(Expense.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ExpenseOutput result = useCase.execute(input);
 
-        assertThat(result).isSameAs(output);
+        ArgumentCaptor<Expense> captor = ArgumentCaptor.forClass(Expense.class);
+        org.mockito.Mockito.verify(expenseRepository).save(captor.capture());
 
-        InOrder order = inOrder(mapper, expenseRepository);
-        order.verify(mapper).mapToDomain(input);
-        order.verify(expenseRepository).save(domain);
-        order.verify(mapper).mapToOutput(saved);
+        Expense persisted = captor.getValue();
+        assertThat(persisted.getId()).isNotBlank();
+        assertThat(persisted.getWalletId()).isEqualTo("wallet-1");
+        assertThat(persisted.getName()).isEqualTo("lunch");
+        assertThat(persisted.getCost().amount()).isEqualByComparingTo("25.50");
+        assertThat(persisted.getRemaining().amount()).isEqualByComparingTo("25.50");
+
+        assertThat(result.id()).isEqualTo(persisted.getId());
+        assertThat(result.name()).isEqualTo("lunch");
+        assertThat(result.cost()).isEqualByComparingTo("25.50");
+        assertThat(result.remaining()).isEqualByComparingTo("25.50");
+        assertThat(result.walletId()).isEqualTo("wallet-1");
+        assertThat(result.purchaseDate()).isEqualTo(input.purchaseDate());
     }
 
     @Test
-    void execute_whenRepositoryFails_propagatesAndDoesNotMapOutput() {
-        when(mapper.mapToDomain(input)).thenReturn(domain);
+    void execute_whenRepositoryFails_propagates() {
         RuntimeException boom = new RuntimeException("mongo down");
-        when(expenseRepository.save(domain)).thenThrow(boom);
+        when(expenseRepository.save(any(Expense.class))).thenThrow(boom);
 
         assertThatThrownBy(() -> useCase.execute(input)).isSameAs(boom);
-
-        verify(mapper, never()).mapToOutput(any());
     }
 
     @Test
-    void execute_whenMapToDomainFails_doesNotTouchRepository() {
-        IllegalStateException boom = new IllegalStateException("mapping failed");
-        when(mapper.mapToDomain(input)).thenThrow(boom);
+    void execute_whenDomainValidationFails_doesNotTouchRepository() {
+        ExpenseInput invalid = new ExpenseInput(
+                "lunch", new BigDecimal("25.50"), LocalDate.now().minusDays(1), null);
 
-        assertThatThrownBy(() -> useCase.execute(input)).isSameAs(boom);
+        assertThatThrownBy(() -> useCase.execute(invalid))
+                .isInstanceOf(NullPointerException.class);
 
         verifyNoInteractions(expenseRepository);
     }

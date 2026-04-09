@@ -3,9 +3,9 @@ package br.com.casellisoftware.budgetmanager.application.expense.usecase;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseInput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.SaveExpenseBoundary;
-import br.com.casellisoftware.budgetmanager.application.mappers.ExpenseApplicationMapper;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
+import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,21 +17,37 @@ public class SaveExpenseUseCase implements SaveExpenseBoundary {
 
     private static final Logger log = LoggerFactory.getLogger(SaveExpenseUseCase.class);
 
-    private final ExpenseApplicationMapper mapper;
     private final ExpenseRepository expenseRepository;
 
-
-    public SaveExpenseUseCase(ExpenseApplicationMapper mapper, ExpenseRepository expenseRepository) {
-        this.mapper = mapper;
+    public SaveExpenseUseCase(ExpenseRepository expenseRepository) {
         this.expenseRepository = expenseRepository;
     }
 
     @Override
     public ExpenseOutput execute(ExpenseInput input) {
         log.info(SAVE_EXPENSE_START, input.walletId());
-        Expense domain = this.mapper.mapToDomain(input);
-        domain = this.expenseRepository.save(domain);
-        log.info(SAVE_EXPENSE_SUCCESS, domain.getId());
-        return this.mapper.mapToOutput(domain);
+
+        Expense expense = Expense.create(
+                input.walletId(),
+                input.name(),
+                Money.of(input.cost()),
+                input.purchaseDate()
+        );
+
+        Expense saved = this.expenseRepository.save(expense);
+        log.info(SAVE_EXPENSE_SUCCESS, saved.getId());
+
+        return toOutput(saved);
+    }
+
+    private static ExpenseOutput toOutput(Expense expense) {
+        return new ExpenseOutput(
+                expense.getId(),
+                expense.getName(),
+                expense.getCost().amount(),
+                expense.getPurchaseDate(),
+                expense.getWalletId(),
+                expense.getRemaining().amount()
+        );
     }
 }

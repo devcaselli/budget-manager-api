@@ -7,7 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Document
 @AllArgsConstructor
@@ -19,7 +19,8 @@ public class ExpenseDocument {
     private String id;
     private String name;
     private BigDecimal cost;
-    private Instant purchaseDate;
     private BigDecimal remaining;
+    private String currency;
+    private LocalDate purchaseDate;
     private String walletId;
 }
