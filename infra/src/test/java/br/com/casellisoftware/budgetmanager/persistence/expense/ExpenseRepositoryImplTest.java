@@ -1,14 +1,12 @@
 package br.com.casellisoftware.budgetmanager.persistence.expense;
 
+import br.com.casellisoftware.budgetmanager.AbstractMongoIntegrationTest;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseNotFoundException;
-import br.com.casellisoftware.budgetmanager.persistence.expense.mappers.ExpensePersistenceMapper;
-import org.junit.jupiter.api.BeforeEach;
+import br.com.casellisoftware.budgetmanager.persistence.expense.mappers.ExpensePersistenceMapperImpl;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -17,137 +15,115 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-class ExpenseRepositoryImplTest {
+@Import({ExpenseRepositoryImpl.class, ExpensePersistenceMapperImpl.class})
+class ExpenseRepositoryImplTest extends AbstractMongoIntegrationTest {
 
-    @Mock
-    private ExpenseMongoRepository mongoRepository;
-
-    @Mock
-    private ExpensePersistenceMapper mapper;
-
+    @Autowired
     private ExpenseRepositoryImpl repository;
 
-    private Expense domain;
-    private ExpenseDocument document;
-
-    @BeforeEach
-    void setUp() {
-        repository = new ExpenseRepositoryImpl(mongoRepository, mapper);
-        domain = new Expense("id-1", "lunch", new BigDecimal("10"), Instant.parse("2026-04-07T12:00:00Z"), null, "wallet-1");
-        document = new ExpenseDocument("id-1", "lunch", new BigDecimal("10"), Instant.parse("2026-04-07T12:00:00Z"), null, "wallet-1");
-    }
+    private static final Instant PURCHASE_DATE = Instant.parse("2026-04-07T12:00:00Z");
 
     @Test
-    void findAllByWalletId_mapsEachDocument() {
-        when(mongoRepository.findAllByWalletId("wallet-1")).thenReturn(List.of(document));
-        when(mapper.expenseDocumentToExpense(document)).thenReturn(domain);
+    void save_persistsAllFields() {
+        Expense expense = new Expense(null, "lunch", new BigDecimal("10.50"), PURCHASE_DATE, null, "wallet-1");
 
-        List<Expense> result = repository.findAllByWalletId("wallet-1");
+        Expense saved = repository.save(expense);
 
-        assertThat(result).containsExactly(domain);
+        assertThat(saved.getId()).isNotNull();
+        assertThat(saved.getName()).isEqualTo("lunch");
+        assertThat(saved.getCost()).isEqualByComparingTo(new BigDecimal("10.50"));
+        assertThat(saved.getPurchaseDate()).isEqualTo(PURCHASE_DATE);
+        assertThat(saved.getRemaining()).isNull();
+        assertThat(saved.getWalletId()).isEqualTo("wallet-1");
     }
 
     @Test
     void findById_whenFound_returnsMappedExpense() {
-        when(mongoRepository.findById("id-1")).thenReturn(Optional.of(document));
-        when(mapper.expenseDocumentToExpense(document)).thenReturn(domain);
+        Expense saved = repository.save(new Expense(null, "coffee", new BigDecimal("5.00"), PURCHASE_DATE, null, "wallet-1"));
 
-        Optional<Expense> result = repository.findById("id-1");
+        Optional<Expense> result = repository.findById(saved.getId());
 
-        assertThat(result).contains(domain);
+        assertThat(result).isPresent();
+        assertThat(result.get().getName()).isEqualTo("coffee");
+        assertThat(result.get().getCost()).isEqualByComparingTo(new BigDecimal("5.00"));
+        assertThat(result.get().getPurchaseDate()).isEqualTo(PURCHASE_DATE);
     }
 
     @Test
     void findById_whenMissing_returnsEmpty() {
-        when(mongoRepository.findById("missing")).thenReturn(Optional.empty());
-
-        assertThat(repository.findById("missing")).isEmpty();
+        assertThat(repository.findById("nonexistent-id")).isEmpty();
     }
 
     @Test
-    void save_mapsPersistsAndReturnsDomain() {
-        when(mapper.expenseDomainToExpenseDocument(domain)).thenReturn(document);
-        when(mongoRepository.save(document)).thenReturn(document);
-        when(mapper.expenseDocumentToExpense(document)).thenReturn(domain);
+    void findAllByWalletId_returnsOnlyMatchingWallet() {
+        repository.save(new Expense(null, "lunch", new BigDecimal("10"), PURCHASE_DATE, null, "wallet-1"));
+        repository.save(new Expense(null, "dinner", new BigDecimal("20"), PURCHASE_DATE, null, "wallet-1"));
+        repository.save(new Expense(null, "other", new BigDecimal("5"), PURCHASE_DATE, null, "wallet-2"));
 
-        Expense result = repository.save(domain);
+        List<Expense> result = repository.findAllByWalletId("wallet-1");
 
-        assertThat(result).isSameAs(domain);
-        verify(mongoRepository).save(document);
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(Expense::getName).containsExactlyInAnyOrder("lunch", "dinner");
     }
 
     @Test
-    void delete_happyPath_deletesById() {
-        when(mongoRepository.existsById("id-1")).thenReturn(true);
+    void update_happyPath_persistsUpdatedFields() {
+        Expense saved = repository.save(new Expense(null, "old name", new BigDecimal("10"), PURCHASE_DATE, null, "wallet-1"));
+        Expense updatedData = new Expense(null, "new name", new BigDecimal("99.99"), PURCHASE_DATE, null, "wallet-1");
 
-        repository.delete(domain);
+        Expense result = repository.update(updatedData, saved.getId());
 
-        verify(mongoRepository).deleteById("id-1");
+        assertThat(result.getId()).isEqualTo(saved.getId());
+        assertThat(result.getName()).isEqualTo("new name");
+        assertThat(result.getCost()).isEqualByComparingTo(new BigDecimal("99.99"));
+        assertThat(updatedData.getId()).as("input must not be mutated").isNull();
+    }
+
+    @Test
+    void update_notFound_throwsExpenseNotFoundException() {
+        Expense expense = new Expense(null, "x", BigDecimal.ONE, PURCHASE_DATE, null, "w");
+
+        assertThatThrownBy(() -> repository.update(expense, "nonexistent-id"))
+                .isInstanceOf(ExpenseNotFoundException.class);
+    }
+
+    @Test
+    void update_nullId_throwsIllegalArgument() {
+        Expense expense = new Expense(null, "x", BigDecimal.ONE, PURCHASE_DATE, null, "w");
+
+        assertThatThrownBy(() -> repository.update(expense, null))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void delete_happyPath_removesExpense() {
+        Expense saved = repository.save(new Expense(null, "lunch", new BigDecimal("10"), PURCHASE_DATE, null, "wallet-1"));
+
+        repository.delete(saved);
+
+        assertThat(repository.findById(saved.getId())).isEmpty();
+    }
+
+    @Test
+    void delete_notFound_throwsExpenseNotFoundException() {
+        Expense expense = new Expense("nonexistent-id", "x", BigDecimal.ONE, PURCHASE_DATE, null, "w");
+
+        assertThatThrownBy(() -> repository.delete(expense))
+                .isInstanceOf(ExpenseNotFoundException.class);
     }
 
     @Test
     void delete_nullExpense_throwsIllegalArgument() {
         assertThatThrownBy(() -> repository.delete(null))
                 .isInstanceOf(IllegalArgumentException.class);
-        verify(mongoRepository, never()).deleteById(any());
     }
 
     @Test
     void delete_nullId_throwsIllegalArgument() {
-        Expense noId = new Expense(null, "x", BigDecimal.ONE, Instant.now(), null, "w");
-        assertThatThrownBy(() -> repository.delete(noId))
+        Expense expense = new Expense(null, "x", BigDecimal.ONE, PURCHASE_DATE, null, "w");
+
+        assertThatThrownBy(() -> repository.delete(expense))
                 .isInstanceOf(IllegalArgumentException.class);
-        verify(mongoRepository, never()).deleteById(any());
-    }
-
-    @Test
-    void delete_notFound_throwsExpenseNotFound() {
-        when(mongoRepository.existsById("id-1")).thenReturn(false);
-
-        assertThatThrownBy(() -> repository.delete(domain))
-                .isInstanceOf(ExpenseNotFoundException.class);
-        verify(mongoRepository, never()).deleteById(any());
-    }
-
-    @Test
-    void update_happyPath_doesNotMutateInputAndSetsIdOnDocument() {
-        Expense input = new Expense(null, "lunch", new BigDecimal("10"), Instant.parse("2026-04-07T12:00:00Z"), null, "wallet-1");
-        ExpenseDocument freshDoc = new ExpenseDocument(null, "lunch", new BigDecimal("10"), Instant.parse("2026-04-07T12:00:00Z"), null, "wallet-1");
-
-        when(mongoRepository.existsById("id-1")).thenReturn(true);
-        when(mapper.expenseDomainToExpenseDocument(input)).thenReturn(freshDoc);
-        when(mongoRepository.save(any(ExpenseDocument.class))).thenReturn(document);
-        when(mapper.expenseDocumentToExpense(document)).thenReturn(domain);
-
-        Expense result = repository.update(input, "id-1");
-
-        assertThat(result).isSameAs(domain);
-        assertThat(input.getId()).as("input must not be mutated").isNull();
-
-        ArgumentCaptor<ExpenseDocument> captor = ArgumentCaptor.forClass(ExpenseDocument.class);
-        verify(mongoRepository).save(captor.capture());
-        assertThat(captor.getValue().getId()).isEqualTo("id-1");
-    }
-
-    @Test
-    void update_nullId_throwsIllegalArgument() {
-        assertThatThrownBy(() -> repository.update(domain, null))
-                .isInstanceOf(IllegalArgumentException.class);
-        verify(mongoRepository, never()).save(any());
-    }
-
-    @Test
-    void update_notFound_throwsExpenseNotFound() {
-        when(mongoRepository.existsById("id-1")).thenReturn(false);
-
-        assertThatThrownBy(() -> repository.update(domain, "id-1"))
-                .isInstanceOf(ExpenseNotFoundException.class);
-        verify(mongoRepository, never()).save(any());
     }
 }
