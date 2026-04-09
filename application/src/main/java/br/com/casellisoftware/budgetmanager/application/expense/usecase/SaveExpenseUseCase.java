@@ -2,6 +2,7 @@ package br.com.casellisoftware.budgetmanager.application.expense.usecase;
 
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseInput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
+import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutputAssembler;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.SaveExpenseBoundary;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
@@ -37,17 +38,6 @@ public class SaveExpenseUseCase implements SaveExpenseBoundary {
         Expense saved = this.expenseRepository.save(expense);
         log.info(SAVE_EXPENSE_SUCCESS, saved.getId());
 
-        return toOutput(saved);
-    }
-
-    private static ExpenseOutput toOutput(Expense expense) {
-        return new ExpenseOutput(
-                expense.getId(),
-                expense.getName(),
-                expense.getCost().amount(),
-                expense.getPurchaseDate(),
-                expense.getWalletId(),
-                expense.getRemaining().amount()
-        );
+        return ExpenseOutputAssembler.from(saved);
     }
 }
