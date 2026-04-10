@@ -1,3 +1,5 @@
 spring:
   application:
     name: budgetmanager
+  profiles:
+    active: dev

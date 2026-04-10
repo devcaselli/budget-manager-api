@@ -1,5 +1,3 @@
 spring:
-  data:
-    mongodb:
-      uri: mongodb://admin:admin@localhost:27017/budgetmanager?authSource=admin
-      database: budgetmanager
+  mongodb:
+    uri: mongodb://admin:admin@localhost:27017/budgetmanager?authSource=admin
