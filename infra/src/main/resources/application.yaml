@@ -1,1 +1,3 @@
-spring.application.name=budgetmanager
+spring:
+  application:
+    name: budgetmanager

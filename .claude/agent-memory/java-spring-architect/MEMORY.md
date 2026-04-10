@@ -1,0 +1,2 @@
+- [Spring Boot 4 + Jackson 3 package moves](project_spring_boot_4_package_moves.md) — @WebMvcTest e ObjectMapper moveram de package; snippets do Boot 3 não compilam
+- [@WebMvcTest + nested dummy controller](feedback_webmvctest_nested_controllers.md) — `controllers = X` não importa nested classes, adicionar ao `@Import`

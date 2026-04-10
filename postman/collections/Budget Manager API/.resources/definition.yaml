@@ -1,0 +1,5 @@
+$kind: collection
+name: 'Budget Manager API'
+variables:
+  - key: baseUrl
+    value: 'http://localhost:8080'

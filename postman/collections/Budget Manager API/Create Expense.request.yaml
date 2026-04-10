@@ -1,0 +1,23 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/expenses'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Groceries",
+      "cost": 123.45,
+      "purchaseDate": "2026-04-10",
+      "walletId": "wallet-123"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
