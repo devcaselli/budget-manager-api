@@ -3,6 +3,8 @@ package br.com.casellisoftware.budgetmanager.persistence.expense.mappers;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.persistence.expense.ExpenseDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Currency;
@@ -15,6 +17,8 @@ import java.util.Currency;
  */
 @Component
 public class ExpensePersistenceMapper {
+
+    private static final Logger log = LoggerFactory.getLogger(ExpensePersistenceMapper.class);
 
     public ExpenseDocument toDocument(Expense expense) {
         return new ExpenseDocument(
@@ -29,9 +33,14 @@ public class ExpensePersistenceMapper {
     }
 
     public Expense toDomain(ExpenseDocument document) {
-        Currency currency = document.getCurrency() == null
-                ? Money.DEFAULT_CURRENCY
-                : Currency.getInstance(document.getCurrency());
+        Currency currency;
+        if (document.getCurrency() == null) {
+            log.warn("Document id={} has no currency — falling back to {}",
+                    document.getId(), Money.DEFAULT_CURRENCY);
+            currency = Money.DEFAULT_CURRENCY;
+        } else {
+            currency = Currency.getInstance(document.getCurrency());
+        }
         Money cost = Money.of(document.getCost(), currency);
         Money remaining = Money.of(document.getRemaining(), currency);
         return Expense.rehydrate(

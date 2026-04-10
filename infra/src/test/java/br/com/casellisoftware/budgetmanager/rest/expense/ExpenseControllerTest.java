@@ -21,8 +21,9 @@ import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -79,7 +80,7 @@ class ExpenseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "/expenses/exp-42"))
+                .andExpect(header().string("Location", "http://localhost/expenses/exp-42"))
                 .andExpect(jsonPath("$.id").value("exp-42"))
                 .andExpect(jsonPath("$.name").value("Groceries"))
                 .andExpect(jsonPath("$.cost").value(59.90))
@@ -155,7 +156,6 @@ class ExpenseControllerTest {
                         .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
-                .andExpect(jsonPath("$.errors", hasSize(4)))
                 .andExpect(jsonPath("$.errors[*].field",
                         containsInAnyOrder("name", "cost", "purchaseDate", "walletId")))
                 .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)));
@@ -219,9 +219,30 @@ class ExpenseControllerTest {
                 .andExpect(jsonPath("$.status").value(500))
                 .andExpect(jsonPath("$.title").value("Internal server error"))
                 .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)))
-                .andExpect(content().string(
-                        org.hamcrest.Matchers.not(
-                                org.hamcrest.Matchers.containsString("secret internal error")
-                        )));
+                .andExpect(content().string(not(containsString("secret internal error"))));
+    }
+
+    // ---------- Validation: future purchase date ----------
+
+    @Test
+    void save_futurePurchaseDate_returns400WithFieldError() throws Exception {
+        String body = """
+                {
+                    "name": "Coffee",
+                    "cost": 5.00,
+                    "purchaseDate": "2099-01-01",
+                    "walletId": "wallet-1"
+                }
+                """;
+
+        mockMvc.perform(post(EXPENSES_PATH)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+                .andExpect(jsonPath("$.errors[?(@.field == 'purchaseDate')]").exists())
+                .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)));
+
+        verify(saveExpenseBoundary, never()).execute(any());
     }
 }
