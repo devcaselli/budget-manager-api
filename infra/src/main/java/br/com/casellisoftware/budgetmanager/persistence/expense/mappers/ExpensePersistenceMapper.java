@@ -17,15 +17,15 @@ import java.util.Currency;
 public class ExpensePersistenceMapper {
 
     public ExpenseDocument toDocument(Expense expense) {
-        ExpenseDocument document = new ExpenseDocument();
-        document.setId(expense.getId());
-        document.setName(expense.getName());
-        document.setCost(expense.getCost().amount());
-        document.setRemaining(expense.getRemaining().amount());
-        document.setCurrency(expense.getCost().currency().getCurrencyCode());
-        document.setPurchaseDate(expense.getPurchaseDate());
-        document.setWalletId(expense.getWalletId());
-        return document;
+        return new ExpenseDocument(
+                expense.getId(),
+                expense.getName(),
+                expense.getCost().amount(),
+                expense.getRemaining().amount(),
+                expense.getCost().currency().getCurrencyCode(),
+                expense.getPurchaseDate(),
+                expense.getWalletId()
+        );
     }
 
     public Expense toDomain(ExpenseDocument document) {

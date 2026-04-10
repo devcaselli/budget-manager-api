@@ -1,7 +1,8 @@
 package br.com.casellisoftware.budgetmanager.persistence.expense;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -10,9 +11,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Document
+@Getter
 @AllArgsConstructor
-@NoArgsConstructor
-@Data
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ExpenseDocument {
 
     @Id

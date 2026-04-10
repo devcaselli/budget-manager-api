@@ -10,9 +10,6 @@ import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static br.com.casellisoftware.budgetmanager.application.configs.ApplicationConstants.SAVE_EXPENSE_START;
-import static br.com.casellisoftware.budgetmanager.application.configs.ApplicationConstants.SAVE_EXPENSE_SUCCESS;
-
 
 public class SaveExpenseUseCase implements SaveExpenseBoundary {
 
@@ -26,7 +23,7 @@ public class SaveExpenseUseCase implements SaveExpenseBoundary {
 
     @Override
     public ExpenseOutput execute(ExpenseInput input) {
-        log.info(SAVE_EXPENSE_START, input.walletId());
+        log.info("Saving expense for walletId={}", input.walletId());
 
         Expense expense = Expense.create(
                 input.walletId(),
@@ -36,7 +33,7 @@ public class SaveExpenseUseCase implements SaveExpenseBoundary {
         );
 
         Expense saved = this.expenseRepository.save(expense);
-        log.info(SAVE_EXPENSE_SUCCESS, saved.getId());
+        log.info("Expense saved successfully, id={}", saved.getId());
 
         return ExpenseOutputAssembler.from(saved);
     }
