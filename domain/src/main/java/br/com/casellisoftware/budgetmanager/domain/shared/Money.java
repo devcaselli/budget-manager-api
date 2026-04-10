@@ -74,6 +74,22 @@ public record Money(BigDecimal amount, Currency currency) {
         return this.amount.signum() > 0;
     }
 
+    /**
+     * Returns a new {@code Money} representing the result of debiting {@code amount}
+     * from this value. Fails if {@code amount} is not positive or exceeds this value.
+     */
+    public Money debitBy(Money amount) {
+        Objects.requireNonNull(amount, "amount must not be null");
+        if (!amount.isPositive()) {
+            throw new IllegalArgumentException("debit amount must be positive");
+        }
+        if (amount.isGreaterThan(this)) {
+            throw new IllegalArgumentException(
+                    "debit amount exceeds remaining: " + amount.amount() + " > " + this.amount);
+        }
+        return this.subtract(amount);
+    }
+
     private void requireSameCurrency(Money other) {
         Objects.requireNonNull(other, "other must not be null");
         if (!this.currency.equals(other.currency)) {

@@ -6,6 +6,7 @@ import br.com.casellisoftware.budgetmanager.rest.expense.dtos.ExpenseRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.expense.dtos.ExpenseResponseDto;
 import br.com.casellisoftware.budgetmanager.rest.expense.mappers.ExpenseRestMapper;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,15 +23,11 @@ import java.net.URI;
  */
 @RestController
 @RequestMapping("/expenses")
+@RequiredArgsConstructor
 public class ExpenseController {
 
     private final SaveExpenseBoundary saveExpenseBoundary;
     private final ExpenseRestMapper mapper;
-
-    public ExpenseController(SaveExpenseBoundary saveExpenseBoundary, ExpenseRestMapper mapper) {
-        this.saveExpenseBoundary = saveExpenseBoundary;
-        this.mapper = mapper;
-    }
 
     @PostMapping
     public ResponseEntity<ExpenseResponseDto> save(@Valid @RequestBody ExpenseRequestDto request) {

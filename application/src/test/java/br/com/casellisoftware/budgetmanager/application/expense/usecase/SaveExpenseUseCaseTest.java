@@ -2,6 +2,7 @@ package br.com.casellisoftware.budgetmanager.application.expense.usecase;
 
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseInput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
+import br.com.casellisoftware.budgetmanager.application.expense.usecase.SaveExpenseUseCase;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,12 +75,13 @@ class SaveExpenseUseCaseTest {
     }
 
     @Test
-    void execute_whenDomainValidationFails_doesNotTouchRepository() {
+    void execute_whenDomainRejectsFuturePurchaseDate_doesNotTouchRepository() {
         ExpenseInput invalid = new ExpenseInput(
-                "lunch", new BigDecimal("25.50"), LocalDate.now().minusDays(1), null);
+                "lunch", new BigDecimal("25.50"), LocalDate.now().plusDays(1), "wallet-1");
 
         assertThatThrownBy(() -> useCase.execute(invalid))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("future");
 
         verifyNoInteractions(expenseRepository);
     }

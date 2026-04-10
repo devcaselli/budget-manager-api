@@ -1,5 +1,6 @@
 package br.com.casellisoftware.budgetmanager.application.expense.boundary;
 
+import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseInput;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

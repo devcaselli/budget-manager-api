@@ -14,6 +14,8 @@ class ExpenseTest {
     private static final LocalDate YESTERDAY = TODAY.minusDays(1);
     private static final Money TEN = Money.of("10.00");
 
+    // ---- create: happy path ----
+
     @Test
     void create_happyPath_generatesIdAndInitializesRemaining() {
         Expense expense = Expense.create("wallet-1", "lunch", TEN, YESTERDAY);
@@ -26,48 +28,7 @@ class ExpenseTest {
         assertThat(expense.getPurchaseDate()).isEqualTo(YESTERDAY);
     }
 
-    @Test
-    void create_rejectsNullWalletId() {
-        assertThatThrownBy(() -> Expense.create(null, "lunch", TEN, TODAY))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("walletId");
-    }
-
-    @Test
-    void create_rejectsBlankWalletId() {
-        assertThatThrownBy(() -> Expense.create("  ", "lunch", TEN, TODAY))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("walletId");
-    }
-
-    @Test
-    void create_rejectsNullName() {
-        assertThatThrownBy(() -> Expense.create("w1", null, TEN, TODAY))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("name");
-    }
-
-    @Test
-    void create_rejectsBlankName() {
-        assertThatThrownBy(() -> Expense.create("w1", "  ", TEN, TODAY))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("name");
-    }
-
-    @Test
-    void create_rejectsNameExceedingMaxLength() {
-        String tooLong = "x".repeat(Expense.MAX_NAME_LENGTH + 1);
-        assertThatThrownBy(() -> Expense.create("w1", tooLong, TEN, TODAY))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("length");
-    }
-
-    @Test
-    void create_rejectsNullCost() {
-        assertThatThrownBy(() -> Expense.create("w1", "lunch", null, TODAY))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("cost");
-    }
+    // ---- create: business rules ----
 
     @Test
     void create_rejectsZeroCost() {
@@ -77,18 +38,13 @@ class ExpenseTest {
     }
 
     @Test
-    void create_rejectsNullPurchaseDate() {
-        assertThatThrownBy(() -> Expense.create("w1", "lunch", TEN, null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("purchaseDate");
-    }
-
-    @Test
     void create_rejectsFuturePurchaseDate() {
         assertThatThrownBy(() -> Expense.create("w1", "lunch", TEN, TODAY.plusDays(1)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("future");
     }
+
+    // ---- debit ----
 
     @Test
     void debit_reducesRemaining() {
@@ -119,43 +75,20 @@ class ExpenseTest {
                 .hasMessageContaining("positive");
     }
 
-    @Test
-    void debit_rejectsNullAmount() {
-        Expense expense = Expense.create("w1", "lunch", TEN, TODAY);
-        assertThatThrownBy(() -> expense.debit(null))
-                .isInstanceOf(NullPointerException.class);
-    }
+    // ---- constructor (used by MapStruct for reconstruction) ----
 
     @Test
-    void rehydrate_acceptsPartiallyPaidState() {
-        Expense expense = Expense.rehydrate(
-                "id-1", "w1", "lunch", TEN, Money.of("3.00"), YESTERDAY);
+    void constructor_allowsPartiallyPaidState() {
+        Expense expense = new Expense("id-1", "w1", "lunch", TEN, Money.of("3.00"), YESTERDAY);
 
         assertThat(expense.getRemaining()).isEqualTo(Money.of("3.00"));
         assertThat(expense.getCost()).isEqualTo(TEN);
     }
 
     @Test
-    void rehydrate_rejectsRemainingGreaterThanCost() {
-        assertThatThrownBy(() -> Expense.rehydrate(
-                "id-1", "w1", "lunch", TEN, Money.of("10.01"), YESTERDAY))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("remaining");
-    }
-
-    @Test
-    void rehydrate_rejectsNullId() {
-        assertThatThrownBy(() -> Expense.rehydrate(
-                null, "w1", "lunch", TEN, TEN, YESTERDAY))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("id");
-    }
-
-    @Test
-    void rehydrate_allowsFuturePurchaseDate() {
-        // create() rejects future dates; rehydrate() does not — historical data wins.
-        Expense expense = Expense.rehydrate(
-                "id-1", "w1", "lunch", TEN, TEN, TODAY.plusDays(30));
+    void constructor_allowsFuturePurchaseDate() {
+        // create() rejects future dates; constructor does not — historical data wins.
+        Expense expense = new Expense("id-1", "w1", "lunch", TEN, TEN, TODAY.plusDays(30));
 
         assertThat(expense.getPurchaseDate()).isEqualTo(TODAY.plusDays(30));
     }

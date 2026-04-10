@@ -4,6 +4,7 @@ import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.persistence.expense.ExpenseDocument;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,7 +15,7 @@ class ExpensePersistenceMapperTest {
 
     private static final LocalDate PURCHASE_DATE = LocalDate.now().minusDays(2);
 
-    private final ExpensePersistenceMapper mapper = new ExpensePersistenceMapper();
+    private final ExpensePersistenceMapper mapper = Mappers.getMapper(ExpensePersistenceMapper.class);
 
     @Test
     void toDocument_copiesAllFieldsAndCurrency() {

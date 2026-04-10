@@ -1,5 +1,7 @@
 package br.com.casellisoftware.budgetmanager.application.expense.boundary;
 
+import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
+import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutputAssembler;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import org.junit.jupiter.api.Test;

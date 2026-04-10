@@ -3,36 +3,36 @@ package br.com.casellisoftware.budgetmanager.persistence.expense.mappers;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.persistence.expense.ExpenseDocument;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.Currency;
 
 /**
- * Manual mapper between {@link Expense} (rich domain entity) and
- * {@link ExpenseDocument} (Mongo persistence model). MapStruct is not used here
- * because the domain is built through private factories ({@link Expense#rehydrate})
- * and uses the {@link Money} value object.
+ * MapStruct mapper between {@link Expense} and {@link ExpenseDocument}.
+ *
+ * <p>{@code toDocument} is fully generated — MapStruct flattens {@link Money}
+ * into {@code BigDecimal} + {@code String} fields. {@code toDomain} is a default
+ * method because reconstructing {@link Money} from two separate document fields
+ * (amount + currency) with a fallback requires logic that MapStruct's declarative
+ * model doesn't express cleanly.</p>
  */
-@Component
-public class ExpensePersistenceMapper {
+@Mapper(componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.ERROR)
+public interface ExpensePersistenceMapper {
 
-    private static final Logger log = LoggerFactory.getLogger(ExpensePersistenceMapper.class);
+    Logger log = LoggerFactory.getLogger(ExpensePersistenceMapper.class);
 
-    public ExpenseDocument toDocument(Expense expense) {
-        return new ExpenseDocument(
-                expense.getId(),
-                expense.getName(),
-                expense.getCost().amount(),
-                expense.getRemaining().amount(),
-                expense.getCost().currency().getCurrencyCode(),
-                expense.getPurchaseDate(),
-                expense.getWalletId()
-        );
-    }
+    @Mapping(target = "cost", source = "cost.amount")
+    @Mapping(target = "remaining", source = "remaining.amount")
+    @Mapping(target = "currency", expression = "java(expense.getCost().currency().getCurrencyCode())")
+    ExpenseDocument toDocument(Expense expense);
 
-    public Expense toDomain(ExpenseDocument document) {
+    default Expense toDomain(ExpenseDocument document) {
         Currency currency;
         if (document.getCurrency() == null) {
             log.warn("Document id={} has no currency — falling back to {}",
@@ -41,14 +41,12 @@ public class ExpensePersistenceMapper {
         } else {
             currency = Currency.getInstance(document.getCurrency());
         }
-        Money cost = Money.of(document.getCost(), currency);
-        Money remaining = Money.of(document.getRemaining(), currency);
-        return Expense.rehydrate(
+        return new Expense(
                 document.getId(),
                 document.getWalletId(),
                 document.getName(),
-                cost,
-                remaining,
+                Money.of(document.getCost(), currency),
+                Money.of(document.getRemaining(), currency),
                 document.getPurchaseDate()
         );
     }
