@@ -5,10 +5,13 @@ import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOu
 import br.com.casellisoftware.budgetmanager.domain.wallet.Wallet;
 import br.com.casellisoftware.budgetmanager.domain.wallet.WalletRepository;
 import br.com.casellisoftware.budgetmanager.domain.wallet.exception.WalletNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 
 public class FindWalletByIdUseCase {
+
+    public static final Logger log =  LoggerFactory.getLogger(FindWalletByIdUseCase.class);
 
     private final WalletRepository  walletRepository;
 
@@ -17,9 +20,11 @@ public class FindWalletByIdUseCase {
     }
 
     public WalletOutput execute(String id){
+        log.info("Finding wallet by id {}", id);
         Wallet wallet = walletRepository.findById(id)
                 .orElseThrow(() -> new WalletNotFoundException("Wallet not found, id: "+id));
 
+        log.info("Wallet found {}", wallet);
         return WalletOutputAssembler.from(wallet);
     }
 }

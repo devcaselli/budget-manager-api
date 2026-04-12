@@ -1,14 +1,15 @@
 package br.com.casellisoftware.budgetmanager.domain.expense;
 
+import br.com.casellisoftware.budgetmanager.domain.shared.PageResult;
+
 import java.util.Optional;
 
 /**
  * Domain port for {@link Expense} persistence.
  *
  * <p>Intentionally minimal: exposes only the primitives required by existing use
- * cases. New operations (e.g., {@code update}, {@code deleteById},
- * {@code findAllByWalletId}) must be added together with the use case that
- * consumes them — not speculatively.</p>
+ * cases. New operations (e.g., {@code update}, {@code deleteById}) must be added
+ * together with the use case that consumes them — not speculatively.</p>
  *
  * <p>Contract rules:
  * <ul>
@@ -23,4 +24,6 @@ public interface ExpenseRepository {
     Expense save(Expense expense);
 
     Optional<Expense> findById(String id);
+
+    PageResult<Expense> findByWalletId(String walletId, int page, int size);
 }

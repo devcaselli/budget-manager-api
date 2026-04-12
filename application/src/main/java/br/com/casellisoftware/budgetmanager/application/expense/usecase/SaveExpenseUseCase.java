@@ -4,6 +4,8 @@ import br.com.casellisoftware.budgetmanager.application.expense.boundary.Expense
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutputAssembler;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.SaveExpenseBoundary;
+import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOutput;
+import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
@@ -16,9 +18,11 @@ public class SaveExpenseUseCase implements SaveExpenseBoundary {
     private static final Logger log = LoggerFactory.getLogger(SaveExpenseUseCase.class);
 
     private final ExpenseRepository expenseRepository;
+    private final FindWalletByIdUseCase  findWalletByIdUseCase;
 
-    public SaveExpenseUseCase(ExpenseRepository expenseRepository) {
+    public SaveExpenseUseCase(ExpenseRepository expenseRepository, FindWalletByIdUseCase findWalletByIdUseCase) {
         this.expenseRepository = expenseRepository;
+        this.findWalletByIdUseCase = findWalletByIdUseCase;
     }
 
     @Override
@@ -26,7 +30,7 @@ public class SaveExpenseUseCase implements SaveExpenseBoundary {
         log.info("Saving expense for walletId={}", input.walletId());
 
         Expense expense = Expense.create(
-                input.walletId(),
+                checkIfWalletExists(input.walletId()),
                 input.name(),
                 Money.of(input.cost()),
                 input.purchaseDate()
@@ -36,5 +40,10 @@ public class SaveExpenseUseCase implements SaveExpenseBoundary {
         log.info("Expense saved successfully, id={}", saved.getId());
 
         return ExpenseOutputAssembler.from(saved);
+    }
+
+    private String checkIfWalletExists(String walletId){
+        WalletOutput execute = this.findWalletByIdUseCase.execute(walletId);
+        return execute.id();
     }
 }

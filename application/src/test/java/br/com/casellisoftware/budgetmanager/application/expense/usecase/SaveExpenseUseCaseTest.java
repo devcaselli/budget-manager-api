@@ -3,12 +3,15 @@ package br.com.casellisoftware.budgetmanager.application.expense.usecase;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseInput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.SaveExpenseUseCase;
+import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOutput;
+import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -27,19 +30,27 @@ class SaveExpenseUseCaseTest {
     @Mock
     private ExpenseRepository expenseRepository;
 
+    @Mock
+    private FindWalletByIdUseCase findWalletByIdUseCase;
+
+    @InjectMocks
     private SaveExpenseUseCase useCase;
 
     private ExpenseInput input;
 
     @BeforeEach
     void setUp() {
-        useCase = new SaveExpenseUseCase(expenseRepository);
+        useCase = new SaveExpenseUseCase(expenseRepository, findWalletByIdUseCase);
         input = new ExpenseInput(
                 "lunch",
                 new BigDecimal("25.50"),
                 LocalDate.now().minusDays(1),
                 "wallet-1"
         );
+
+        // Mock the wallet lookup to return a valid wallet
+        WalletOutput walletOutput = new WalletOutput("wallet-1", "Test Wallet", new BigDecimal("100.00"), new BigDecimal("100.0"), null, null, false);
+        when(findWalletByIdUseCase.execute("wallet-1")).thenReturn(walletOutput);
     }
 
     @Test

@@ -1,23 +1,23 @@
 $kind: http-request
+name: Create Expense
 method: POST
-url: '{{baseUrl}}/expenses'
+url: "{{baseUrl}}/expenses"
 order: 1775858089630
 headers:
-  - key: Content-Type
-    value: application/json
+  Content-Type: application/json
 body:
   type: json
   content: |-
     {
-      "name": "Groceries",
-      "cost": 123.45,
+      "name": "{{$randomProduct}}",
+      "cost": {{$randomPrice}},
       "purchaseDate": "2026-04-10",
-      "walletId": "wallet-123"
+      "walletId": "674c165a-73f1-4d3b-8527-5e9392bcc25e"
     }
 scripts:
   - type: afterResponse
-    language: text/javascript
     code: |-
       pm.test("Status code is 201", function () {
         pm.response.to.have.status(201);
       });
+    language: text/javascript

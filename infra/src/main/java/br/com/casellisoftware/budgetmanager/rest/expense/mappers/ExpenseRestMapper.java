@@ -2,11 +2,15 @@ package br.com.casellisoftware.budgetmanager.rest.expense.mappers;
 
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseInput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
+import br.com.casellisoftware.budgetmanager.domain.shared.PageResult;
 import br.com.casellisoftware.budgetmanager.rest.expense.dtos.ExpenseRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.expense.dtos.ExpenseResponseDto;
+import br.com.casellisoftware.budgetmanager.rest.expense.dtos.PagedExpenseResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.ReportingPolicy;
+
+import java.util.List;
 
 /**
  * Strict MapStruct mapper for REST DTO ↔ application boundary records.
@@ -32,4 +36,23 @@ public interface ExpenseRestMapper {
     ExpenseInput expenseRequestDtoToExpenseInput(ExpenseRequestDto expenseRequestDto);
 
     ExpenseResponseDto expenseOutputToExpenseResponseDto(ExpenseOutput expense);
+
+    /**
+     * Converts a paged application result into the REST response DTO.
+     * Hand-written because MapStruct cannot infer the generic {@code PageResult<ExpenseOutput>}
+     * to {@code PagedExpenseResponseDto} mapping automatically.
+     */
+    default PagedExpenseResponseDto toPagedResponse(PageResult<ExpenseOutput> page) {
+        List<ExpenseResponseDto> content = page.content().stream()
+                .map(this::expenseOutputToExpenseResponseDto)
+                .toList();
+
+        return new PagedExpenseResponseDto(
+                content,
+                page.page(),
+                page.size(),
+                page.totalElements(),
+                page.totalPages()
+        );
+    }
 }

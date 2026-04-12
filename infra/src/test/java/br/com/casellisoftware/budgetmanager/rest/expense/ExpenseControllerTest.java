@@ -2,9 +2,14 @@ package br.com.casellisoftware.budgetmanager.rest.expense;
 
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseInput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
+import br.com.casellisoftware.budgetmanager.application.expense.boundary.FindExpensesByWalletIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.SaveExpenseBoundary;
+import br.com.casellisoftware.budgetmanager.domain.shared.PageResult;
+import br.com.casellisoftware.budgetmanager.domain.wallet.exception.WalletNotFoundException;
 import br.com.casellisoftware.budgetmanager.rest.advice.GlobalExceptionHandler;
 import br.com.casellisoftware.budgetmanager.rest.expense.dtos.ExpenseRequestDto;
+import br.com.casellisoftware.budgetmanager.rest.expense.dtos.ExpenseResponseDto;
+import br.com.casellisoftware.budgetmanager.rest.expense.dtos.PagedExpenseResponseDto;
 import br.com.casellisoftware.budgetmanager.rest.expense.mappers.ExpenseRestMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -18,6 +23,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -25,10 +31,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -57,6 +66,9 @@ class ExpenseControllerTest {
 
     @MockitoBean
     private SaveExpenseBoundary saveExpenseBoundary;
+
+    @MockitoBean
+    private FindExpensesByWalletIdBoundary findExpensesByWalletIdBoundary;
 
     @MockitoBean
     private ExpenseRestMapper mapper;
@@ -244,5 +256,89 @@ class ExpenseControllerTest {
                 .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)));
 
         verify(saveExpenseBoundary, never()).execute(any());
+    }
+
+    // ---------- Find by wallet id ----------
+
+    @Test
+    void findByWalletId_happyPath_returns200WithPagedBody() throws Exception {
+        var output1 = new ExpenseOutput("exp-1", "Lunch", new BigDecimal("10.50"),
+                LocalDate.of(2026, 4, 10), "wallet-1", new BigDecimal("10.50"));
+        var output2 = new ExpenseOutput("exp-2", "Coffee", new BigDecimal("5.00"),
+                LocalDate.of(2026, 4, 11), "wallet-1", new BigDecimal("5.00"));
+
+        PageResult<ExpenseOutput> pageResult = new PageResult<>(
+                List.of(output1, output2), 0, 20, 2, 1
+        );
+
+        var responseDto1 = new ExpenseResponseDto("exp-1", "Lunch", new BigDecimal("10.50"),
+                LocalDate.of(2026, 4, 10), new BigDecimal("10.50"), "wallet-1");
+        var responseDto2 = new ExpenseResponseDto("exp-2", "Coffee", new BigDecimal("5.00"),
+                LocalDate.of(2026, 4, 11), new BigDecimal("5.00"), "wallet-1");
+
+        var pagedResponse = new PagedExpenseResponseDto(
+                List.of(responseDto1, responseDto2), 0, 20, 2, 1
+        );
+
+        when(findExpensesByWalletIdBoundary.execute("wallet-1", 0, 20)).thenReturn(pageResult);
+        when(mapper.toPagedResponse(pageResult)).thenReturn(pagedResponse);
+
+        mockMvc.perform(get(EXPENSES_PATH + "/wallet/wallet-1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].id").value("exp-1"))
+                .andExpect(jsonPath("$.content[0].name").value("Lunch"))
+                .andExpect(jsonPath("$.content[1].id").value("exp-2"))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(1));
+    }
+
+    @Test
+    void findByWalletId_withCustomPageParams_passesThemThrough() throws Exception {
+        PageResult<ExpenseOutput> pageResult = new PageResult<>(List.of(), 2, 5, 0, 0);
+        var pagedResponse = new PagedExpenseResponseDto(List.of(), 2, 5, 0, 0);
+
+        when(findExpensesByWalletIdBoundary.execute("wallet-1", 2, 5)).thenReturn(pageResult);
+        when(mapper.toPagedResponse(pageResult)).thenReturn(pagedResponse);
+
+        mockMvc.perform(get(EXPENSES_PATH + "/wallet/wallet-1")
+                        .param("page", "2")
+                        .param("size", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(2))
+                .andExpect(jsonPath("$.size").value(5));
+    }
+
+    @Test
+    void findByWalletId_walletNotFound_returns404() throws Exception {
+        when(findExpensesByWalletIdBoundary.execute(eq("nonexistent"), anyInt(), anyInt()))
+                .thenThrow(new WalletNotFoundException("nonexistent"));
+
+        mockMvc.perform(get(EXPENSES_PATH + "/wallet/nonexistent"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+                .andExpect(jsonPath("$.title").value("Wallet not found"))
+                .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)));
+    }
+
+    @Test
+    void findByWalletId_negativePage_returns400() throws Exception {
+        mockMvc.perform(get(EXPENSES_PATH + "/wallet/wallet-1")
+                        .param("page", "-1"))
+                .andExpect(status().isBadRequest());
+
+        verify(findExpensesByWalletIdBoundary, never()).execute(any(), anyInt(), anyInt());
+    }
+
+    @Test
+    void findByWalletId_sizeExceedsMax_returns400() throws Exception {
+        mockMvc.perform(get(EXPENSES_PATH + "/wallet/wallet-1")
+                        .param("size", "101"))
+                .andExpect(status().isBadRequest());
+
+        verify(findExpensesByWalletIdBoundary, never()).execute(any(), anyInt(), anyInt());
     }
 }

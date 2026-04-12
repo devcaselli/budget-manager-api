@@ -1,6 +1,7 @@
 package br.com.casellisoftware.budgetmanager.rest.advice;
 
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseNotFoundException;
+import br.com.casellisoftware.budgetmanager.domain.wallet.exception.WalletNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,6 +104,17 @@ public class GlobalExceptionHandler {
         return problemResponse(HttpStatus.NOT_FOUND, problem);
     }
 
+    @ExceptionHandler(WalletNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleWalletNotFound(WalletNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage()
+        );
+        problem.setTitle("Wallet not found");
+        problem.setProperty(CORRELATION_ID, newCorrelationId());
+        return problemResponse(HttpStatus.NOT_FOUND, problem);
+    }
+
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<ProblemDetail> handleDataAccess(DataAccessException ex) {
         String correlationId = newCorrelationId();
@@ -130,6 +142,7 @@ public class GlobalExceptionHandler {
         problem.setProperty(CORRELATION_ID, correlationId);
         return problemResponse(HttpStatus.INTERNAL_SERVER_ERROR, problem);
     }
+
 
     private static ResponseEntity<ProblemDetail> problemResponse(HttpStatus status, ProblemDetail body) {
         return ResponseEntity.status(status)

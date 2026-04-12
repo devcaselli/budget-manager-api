@@ -1,16 +1,25 @@
 package br.com.casellisoftware.budgetmanager.rest.expense;
 
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
+import br.com.casellisoftware.budgetmanager.application.expense.boundary.FindExpensesByWalletIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.SaveExpenseBoundary;
+import br.com.casellisoftware.budgetmanager.domain.shared.PageResult;
 import br.com.casellisoftware.budgetmanager.rest.expense.dtos.ExpenseRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.expense.dtos.ExpenseResponseDto;
+import br.com.casellisoftware.budgetmanager.rest.expense.dtos.PagedExpenseResponseDto;
 import br.com.casellisoftware.budgetmanager.rest.expense.mappers.ExpenseRestMapper;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -21,12 +30,14 @@ import java.net.URI;
  * the corresponding application-layer use case and uses {@link ExpenseRestMapper}
  * to translate between HTTP DTOs and application boundary records.
  */
+@Validated
 @RestController
 @RequestMapping("/expenses")
 @RequiredArgsConstructor
 public class ExpenseController {
 
     private final SaveExpenseBoundary saveExpenseBoundary;
+    private final FindExpensesByWalletIdBoundary findExpensesByWalletIdBoundary;
     private final ExpenseRestMapper mapper;
 
     @PostMapping
@@ -44,4 +55,17 @@ public class ExpenseController {
 
         return ResponseEntity.created(location).body(response);
     }
+
+    @GetMapping("/wallet/{walletId}")
+    public ResponseEntity<PagedExpenseResponseDto> findByWalletId(
+            @PathVariable String walletId,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+
+        PageResult<ExpenseOutput> result = findExpensesByWalletIdBoundary.execute(walletId, page, size);
+        PagedExpenseResponseDto response = mapper.toPagedResponse(result);
+
+        return ResponseEntity.ok(response);
+    }
 }
+
