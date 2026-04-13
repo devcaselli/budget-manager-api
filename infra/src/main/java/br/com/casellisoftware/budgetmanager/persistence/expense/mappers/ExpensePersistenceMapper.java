@@ -47,7 +47,8 @@ public interface ExpensePersistenceMapper {
                 document.getName(),
                 Money.of(document.getCost(), currency),
                 Money.of(document.getRemaining(), currency),
-                document.getPurchaseDate()
+                document.getPurchaseDate(),
+                document.getPaymentIds()
         );
     }
 }

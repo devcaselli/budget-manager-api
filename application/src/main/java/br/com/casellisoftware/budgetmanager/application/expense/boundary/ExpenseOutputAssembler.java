@@ -32,7 +32,8 @@ public final class ExpenseOutputAssembler {
                 expense.getCost().amount(),
                 expense.getPurchaseDate(),
                 expense.getWalletId(),
-                expense.getRemaining().amount()
+                expense.getRemaining().amount(),
+                expense.getPaymentIds()
         );
     }
 }

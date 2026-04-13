@@ -1,4 +1,4 @@
-package br.com.casellisoftware.budgetmanager.persistence.expense;
+package br.com.casellisoftware.budgetmanager.persistence.payment;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,22 +8,19 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
+import java.time.Instant;
 
 @Document
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ExpenseDocument {
+public class PaymentDocument {
 
     @Id
     private String id;
-    private String name;
-    private BigDecimal cost;
-    private BigDecimal remaining;
-    private String currency;
-    private LocalDate purchaseDate;
+    private BigDecimal amount;
+    private Instant paymentDate;
+    private String details;
+    private String expenseId;
     private String walletId;
-    private List<String> paymentIds;
 }

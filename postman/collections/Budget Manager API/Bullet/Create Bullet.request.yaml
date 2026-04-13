@@ -1,0 +1,22 @@
+$kind: http-request
+name: Create Bullet
+method: POST
+url: "{{baseUrl}}/bullets"
+order: 1775858100000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "description": "Sample bullet",
+      "budget": 125.75,
+      "walletId": "{{walletId}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
+    language: text/javascript

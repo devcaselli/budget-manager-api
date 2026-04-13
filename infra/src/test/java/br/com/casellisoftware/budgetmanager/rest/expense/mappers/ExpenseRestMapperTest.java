@@ -45,7 +45,8 @@ class ExpenseRestMapperTest {
                 new BigDecimal("5.00"),
                 PURCHASE_DATE,
                 "wallet-2",
-                new BigDecimal("2.50")
+                new BigDecimal("2.50"),
+                List.of()
         );
 
         ExpenseResponseDto dto = mapper.expenseOutputToExpenseResponseDto(output);
@@ -58,16 +59,17 @@ class ExpenseRestMapperTest {
                         new BigDecimal("5.00"),
                         PURCHASE_DATE,
                         new BigDecimal("2.50"),
-                        "wallet-2"
+                        "wallet-2",
+                        List.of()
                 ));
     }
 
     @Test
     void toPagedResponse_mapsAllFieldsAndContent() {
         ExpenseOutput output1 = new ExpenseOutput(
-                "id-1", "lunch", new BigDecimal("10.50"), PURCHASE_DATE, "wallet-1", new BigDecimal("10.50"));
+                "id-1", "lunch", new BigDecimal("10.50"), PURCHASE_DATE, "wallet-1", new BigDecimal("10.50"), List.of());
         ExpenseOutput output2 = new ExpenseOutput(
-                "id-2", "coffee", new BigDecimal("5.00"), PURCHASE_DATE, "wallet-1", new BigDecimal("5.00"));
+                "id-2", "coffee", new BigDecimal("5.00"), PURCHASE_DATE, "wallet-1", new BigDecimal("5.00"), List.of());
 
         PageResult<ExpenseOutput> page = new PageResult<>(
                 List.of(output1, output2), 0, 10, 2, 1

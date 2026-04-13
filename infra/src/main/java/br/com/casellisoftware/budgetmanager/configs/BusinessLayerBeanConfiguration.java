@@ -1,8 +1,12 @@
 package br.com.casellisoftware.budgetmanager.configs;
 
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.FindBulletByIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.bullet.usecase.PatchBulletUseCase;
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.SaveBulletUseCase;
+import br.com.casellisoftware.budgetmanager.application.expense.boundary.FindExpenseByIdBoundary;
+import br.com.casellisoftware.budgetmanager.application.expense.usecase.FindExpenseByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.FindExpensesByWalletIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.expense.usecase.PatchExpenseUseCase;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.SaveExpenseUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.SaveWalletUseCase;
@@ -43,5 +47,20 @@ public class BusinessLayerBeanConfiguration {
     @Bean
     public FindWalletByIdUseCase  findWalletByIdUseCase(WalletRepository walletRepository) {
         return new FindWalletByIdUseCase(walletRepository);
+    }
+
+    @Bean
+    public FindExpenseByIdUseCase findExpenseByIdUseCase(ExpenseRepository repository) {
+        return new FindExpenseByIdUseCase(repository);
+    }
+
+    @Bean
+    public PatchExpenseUseCase patchExpenseUseCase(ExpenseRepository repository){
+        return new PatchExpenseUseCase(repository);
+    }
+
+    @Bean
+    public PatchBulletUseCase patchBulletUseCase(BulletRepository repository){
+        return new PatchBulletUseCase(repository);
     }
 }

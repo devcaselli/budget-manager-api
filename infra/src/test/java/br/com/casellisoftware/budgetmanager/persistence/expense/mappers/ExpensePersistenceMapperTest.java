@@ -8,6 +8,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,7 +42,8 @@ class ExpensePersistenceMapperTest {
                 new BigDecimal("2.50"),
                 "BRL",
                 PURCHASE_DATE,
-                "wallet-2"
+                "wallet-2",
+                List.of("payment-1", "payment-2")
         );
 
         Expense expense = mapper.toDomain(document);
@@ -53,6 +55,7 @@ class ExpensePersistenceMapperTest {
         assertThat(expense.getRemaining().amount()).isEqualByComparingTo("2.50");
         assertThat(expense.getPurchaseDate()).isEqualTo(PURCHASE_DATE);
         assertThat(expense.getWalletId()).isEqualTo("wallet-2");
+        assertThat(expense.getPaymentIds()).containsExactly("payment-1", "payment-2");
     }
 
     @Test
@@ -64,7 +67,8 @@ class ExpensePersistenceMapperTest {
                 new BigDecimal("1.00"),
                 null,
                 PURCHASE_DATE,
-                "wallet-legacy"
+                "wallet-legacy",
+                null
         );
 
         Expense expense = mapper.toDomain(document);

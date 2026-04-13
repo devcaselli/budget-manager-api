@@ -79,9 +79,9 @@ class ExpenseControllerTest {
     void save_validPayload_returns201WithLocationAndBody() throws Exception {
         var request = new ExpenseRequestDto("Groceries", new BigDecimal("59.90"), LocalDate.of(2026, 4, 10), "wallet-1");
         var input = new ExpenseInput("Groceries", new BigDecimal("59.90"), LocalDate.of(2026, 4, 10), "wallet-1");
-        var output = new ExpenseOutput("exp-42", "Groceries", new BigDecimal("59.90"), LocalDate.of(2026, 4, 10), "wallet-1", new BigDecimal("940.10"));
+        var output = new ExpenseOutput("exp-42", "Groceries", new BigDecimal("59.90"), LocalDate.of(2026, 4, 10), "wallet-1", new BigDecimal("940.10"), List.of());
         var responseDto = new br.com.casellisoftware.budgetmanager.rest.expense.dtos.ExpenseResponseDto(
-                "exp-42", "Groceries", new BigDecimal("59.90"), LocalDate.of(2026, 4, 10), new BigDecimal("940.10"), "wallet-1"
+                "exp-42", "Groceries", new BigDecimal("59.90"), LocalDate.of(2026, 4, 10), new BigDecimal("940.10"), "wallet-1", List.of()
         );
 
         when(mapper.expenseRequestDtoToExpenseInput(any(ExpenseRequestDto.class))).thenReturn(input);
@@ -263,18 +263,18 @@ class ExpenseControllerTest {
     @Test
     void findByWalletId_happyPath_returns200WithPagedBody() throws Exception {
         var output1 = new ExpenseOutput("exp-1", "Lunch", new BigDecimal("10.50"),
-                LocalDate.of(2026, 4, 10), "wallet-1", new BigDecimal("10.50"));
+                LocalDate.of(2026, 4, 10), "wallet-1", new BigDecimal("10.50"), List.of());
         var output2 = new ExpenseOutput("exp-2", "Coffee", new BigDecimal("5.00"),
-                LocalDate.of(2026, 4, 11), "wallet-1", new BigDecimal("5.00"));
+                LocalDate.of(2026, 4, 11), "wallet-1", new BigDecimal("5.00"), List.of());
 
         PageResult<ExpenseOutput> pageResult = new PageResult<>(
                 List.of(output1, output2), 0, 20, 2, 1
         );
 
         var responseDto1 = new ExpenseResponseDto("exp-1", "Lunch", new BigDecimal("10.50"),
-                LocalDate.of(2026, 4, 10), new BigDecimal("10.50"), "wallet-1");
+                LocalDate.of(2026, 4, 10), new BigDecimal("10.50"), "wallet-1", List.of());
         var responseDto2 = new ExpenseResponseDto("exp-2", "Coffee", new BigDecimal("5.00"),
-                LocalDate.of(2026, 4, 11), new BigDecimal("5.00"), "wallet-1");
+                LocalDate.of(2026, 4, 11), new BigDecimal("5.00"), "wallet-1", List.of());
 
         var pagedResponse = new PagedExpenseResponseDto(
                 List.of(responseDto1, responseDto2), 0, 20, 2, 1

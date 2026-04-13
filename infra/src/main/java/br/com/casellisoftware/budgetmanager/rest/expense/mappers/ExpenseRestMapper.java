@@ -2,6 +2,7 @@ package br.com.casellisoftware.budgetmanager.rest.expense.mappers;
 
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseInput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
+import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.domain.shared.PageResult;
 import br.com.casellisoftware.budgetmanager.rest.expense.dtos.ExpenseRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.expense.dtos.ExpenseResponseDto;
@@ -10,6 +11,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.ReportingPolicy;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -36,6 +38,13 @@ public interface ExpenseRestMapper {
     ExpenseInput expenseRequestDtoToExpenseInput(ExpenseRequestDto expenseRequestDto);
 
     ExpenseResponseDto expenseOutputToExpenseResponseDto(ExpenseOutput expense);
+
+    /**
+     * MapStruct helper method to convert Money to BigDecimal.
+     */
+    default BigDecimal map(Money value) {
+        return value == null ? null : value.amount();
+    }
 
     /**
      * Converts a paged application result into the REST response DTO.

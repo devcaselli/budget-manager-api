@@ -1,8 +1,11 @@
 package br.com.casellisoftware.budgetmanager.domain.expense;
 
+import br.com.casellisoftware.budgetmanager.domain.payment.Payment;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -27,6 +30,7 @@ public final class Expense {
     private final Money cost;
     private final Money remaining;
     private final LocalDate purchaseDate;
+    private final List<String> paymentIds;
 
     public Expense(String id,
                    String walletId,
@@ -40,6 +44,23 @@ public final class Expense {
         this.cost = cost;
         this.remaining = remaining;
         this.purchaseDate = purchaseDate;
+        this.paymentIds = List.of();
+    }
+
+    public Expense(String id,
+                   String walletId,
+                   String name,
+                   Money cost,
+                   Money remaining,
+                   LocalDate purchaseDate,
+                   List<String> paymentIds) {
+        this.id = id;
+        this.walletId = walletId;
+        this.name = name;
+        this.cost = cost;
+        this.remaining = remaining;
+        this.purchaseDate = purchaseDate;
+        this.paymentIds = paymentIds != null ? List.copyOf(paymentIds) : List.of();
     }
 
     /**
@@ -65,7 +86,19 @@ public final class Expense {
      */
     public Expense debit(Money amount) {
         Money newRemaining = this.remaining.debitBy(amount);
-        return new Expense(this.id, this.walletId, this.name, this.cost, newRemaining, this.purchaseDate);
+        return new Expense(this.id, this.walletId, this.name, this.cost, newRemaining, this.purchaseDate, this.paymentIds);
+    }
+
+    /**
+     * Returns a new {@code Expense} with {@code payment.getId()} appended to
+     * {@code paymentIds} and {@code remaining} debited by {@code payment.getAmount()}.
+     */
+    public Expense pay(Payment payment) {
+
+        List<String> updatedIds = new ArrayList<>(this.paymentIds);
+        updatedIds.add(payment.getId());
+        return new Expense(this.id, this.walletId, this.name, this.cost, this.remaining, this.purchaseDate, updatedIds)
+                .debit(Money.of(payment.getAmount()));
     }
 
     public String getId() {
@@ -90,6 +123,10 @@ public final class Expense {
 
     public LocalDate getPurchaseDate() {
         return purchaseDate;
+    }
+
+    public List<String> getPaymentIds() {
+        return paymentIds;
     }
 
     @Override
