@@ -1,7 +1,6 @@
 package br.com.casellisoftware.budgetmanager.application.payment.boundary;
 
 import br.com.casellisoftware.budgetmanager.domain.payment.Payment;
-import br.com.casellisoftware.budgetmanager.domain.payment.PaymentRepository;
 
 public class PaymentOutputAssembler {
 

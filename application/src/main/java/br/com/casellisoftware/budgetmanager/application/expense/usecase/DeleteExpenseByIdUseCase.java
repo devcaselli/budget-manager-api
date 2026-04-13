@@ -12,23 +12,25 @@ import br.com.casellisoftware.budgetmanager.application.payment.usecase.FindAllP
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static java.util.function.Function.identity;
 
 public class DeleteExpenseByIdUseCase implements DeleteExpenseByIdBoundary {
 
     private final ExpenseRepository expenseRepository;
     private final FindExpenseByIdUseCase findExpenseByIdUseCase;
-    private final FindAllPaymentByExpenseIdUseCase  findAllPaymentByExpenseIdUseCase;
+    private final FindAllPaymentByExpenseIdUseCase findAllPaymentByExpenseIdUseCase;
     private final FindAllBulletsByIdsUseCase findAllBulletsByIdsUseCase;
     private final PatchBulletUseCase patchBulletUseCase;
     private final DeleteAllPaymentByIdUseCase deleteAllPaymentByIdUseCase;
 
-    public DeleteExpenseByIdUseCase(ExpenseRepository expenseRepository, FindExpenseByIdUseCase findExpenseByIdUseCase, FindAllPaymentByExpenseIdUseCase findAllPaymentByExpenseIdUseCase, FindAllBulletsByIdsUseCase findAllBulletsByIdsUseCase, PatchBulletUseCase patchBulletUseCase, DeleteAllPaymentByIdUseCase deleteAllPaymentByIdUseCase) {
+    public DeleteExpenseByIdUseCase(ExpenseRepository expenseRepository,
+                                    FindExpenseByIdUseCase findExpenseByIdUseCase,
+                                    FindAllPaymentByExpenseIdUseCase findAllPaymentByExpenseIdUseCase,
+                                    FindAllBulletsByIdsUseCase findAllBulletsByIdsUseCase,
+                                    PatchBulletUseCase patchBulletUseCase,
+                                    DeleteAllPaymentByIdUseCase deleteAllPaymentByIdUseCase) {
         this.expenseRepository = expenseRepository;
         this.findExpenseByIdUseCase = findExpenseByIdUseCase;
         this.findAllPaymentByExpenseIdUseCase = findAllPaymentByExpenseIdUseCase;
@@ -37,47 +39,40 @@ public class DeleteExpenseByIdUseCase implements DeleteExpenseByIdBoundary {
         this.deleteAllPaymentByIdUseCase = deleteAllPaymentByIdUseCase;
     }
 
-    public void execute(String id){
-        ExpenseOutput expense =  findExpenseByIdUseCase.execute(id);
-        this.rechargeableBullets(expense.id());
-        this.expenseRepository.deleteById(expense.id());
+    public void execute(String id) {
+        ExpenseOutput expense = findExpenseByIdUseCase.execute(id);
+        rechargeableBullets(expense.id());
+        expenseRepository.deleteById(expense.id());
     }
 
-    private void rechargeableBullets(String id){
-        List<PaymentOutput> payments = this.findAllPaymentByExpenseIdUseCase.execute(id);
-
-        List<BulletOutput> bullets = this.findAllBulletsByIdsUseCase.execute(
-                payments.stream()
-                        .map(PaymentOutput::bulletId)
-                        .toList()
-        );
-
-        for(BulletOutput bullet : bullets){
-            List<PaymentOutput> p = payments
-                    .stream()
-                    .filter(data -> data.bulletId().equals(bullet.id()))
-                    .toList();
-
-
-            PatchBulletInput patchBulletInput = bulletOutputToInput(
-                    bullet,
-                    p.stream().map(PaymentOutput::amount)
-                            .reduce(BigDecimal.ZERO, BigDecimal::add)
-            );
-
-            this.patchBulletUseCase.execute(patchBulletInput);
-            this.deleteAllPaymentByIdUseCase.execute(payments.stream().map(PaymentOutput::id).collect(Collectors.toList()));
+    private void rechargeableBullets(String expenseId) {
+        List<PaymentOutput> payments = findAllPaymentByExpenseIdUseCase.execute(expenseId);
+        if (payments.isEmpty()) {
+            return;
         }
+
+        Map<String, BigDecimal> refundsByBulletId = payments.stream()
+                .collect(Collectors.groupingBy(
+                        PaymentOutput::bulletId,
+                        Collectors.reducing(BigDecimal.ZERO, PaymentOutput::amount, BigDecimal::add)
+                ));
+
+        findAllBulletsByIdsUseCase.execute(List.copyOf(refundsByBulletId.keySet()))
+                .forEach(bullet -> patchBulletUseCase.execute(
+                        toPatchInput(bullet, refundsByBulletId.get(bullet.id()))
+                ));
+
+        deleteAllPaymentByIdUseCase.execute(
+                payments.stream().map(PaymentOutput::id).toList()
+        );
     }
 
-    private PatchBulletInput bulletOutputToInput(BulletOutput bullet, BigDecimal newRemaining){
+    private PatchBulletInput toPatchInput(BulletOutput bullet, BigDecimal refund) {
         return new PatchBulletInput(
                 bullet.id(),
                 bullet.description(),
                 bullet.budget(),
-                bullet.remaining().add(newRemaining)
+                bullet.remaining().add(refund)
         );
     }
-
-
 }
