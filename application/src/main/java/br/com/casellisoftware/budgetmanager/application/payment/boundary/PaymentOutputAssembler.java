@@ -14,7 +14,8 @@ public class PaymentOutputAssembler {
                 payment.getPaymentDate(),
                 payment.getDetails(),
                 payment.getExpenseId(),
-                payment.getWalletId()
+                payment.getWalletId(),
+                payment.getBulletId()
         );
     }
 }

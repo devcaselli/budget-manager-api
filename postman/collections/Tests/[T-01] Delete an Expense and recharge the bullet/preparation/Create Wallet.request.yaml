@@ -1,18 +1,18 @@
 $kind: http-request
-name: Create Expense
+name: Create Wallet
+url: "{{baseUrl}}/wallets"
 method: POST
-url: "{{baseUrl}}/expenses"
-order: 1775858089630
 headers:
   Content-Type: application/json
 body:
   type: json
   content: |-
     {
-      "name": "{{$randomProduct}}",
-      "cost": {{$randomPrice}},
-      "purchaseDate": "2026-04-10",
-      "walletId": "{{walletId}}"
+      "description": "T-01 {{$randomUUID}}",
+      "budget": 10000.00,
+      "startDate": "2050-01-01",
+      "closedDate": "2050-02-01",
+      "closed": false
     }
 scripts:
   - type: afterResponse
@@ -22,5 +22,6 @@ scripts:
       });
 
       var id = pm.response.json().id;
-      pm.collectionVariables.set("expenseId", id);
+      pm.collectionVariables.set("walletId", id);
     language: text/javascript
+order: 1776118284234

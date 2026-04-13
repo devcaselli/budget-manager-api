@@ -31,7 +31,7 @@ public class PaymentService {
         Expense expense = toExpense(findExpenseByIdBoundary.execute(request.expenseId()));
         Bullet bullet = toBullet(findBulletByIdBoundary.execute(request.bulletId()));
 
-        Payment savedPayment = paymentRepository.save(createPayment(request));
+        Payment savedPayment = paymentRepository.save(createPayment(request, walletId));
 
         Expense paidExpense = expense.pay(savedPayment);
         Bullet paidBullet = bullet.pay(savedPayment);
@@ -62,12 +62,13 @@ public class PaymentService {
         );
     }
 
-    private Payment createPayment(PayRequestDto dto) {
+    private Payment createPayment(PayRequestDto dto, String walletId) {
         return Payment.create(
                 dto.payment().amount(),
                 dto.payment().paymentDate(),
                 dto.payment().details(),
                 dto.expenseId(),
+                walletId,
                 dto.bulletId()
         );
     }

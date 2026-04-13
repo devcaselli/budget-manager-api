@@ -1,22 +1,21 @@
 $kind: http-request
-name: Pay
-method: POST
+name: Pay B
 url: "{{baseUrl}}/pay"
-order: 1775858120000
-queryParams:
-  walletId: "{{walletId}}"
+method: POST
 headers:
   Content-Type: application/json
+queryParams:
+  walletId: "{{walletId}}"
 body:
   type: json
   content: |-
     {
       "payment": {
-        "amount": 20.0,
+        "amount": 100.0,
         "paymentDate": "2026-04-13T12:00:00Z",
-        "details": "Teste {{randomNumber}}"
+        "details": "T-01 B {{$randomUUID}}"
       },
-      "bulletId": "{{bulletId}}",
+      "bulletId": "{{bulletIdB}}",
       "expenseId": "{{expenseId}}"
     }
 scripts:
@@ -26,3 +25,4 @@ scripts:
         pm.response.to.have.status(204);
       });
     language: text/javascript
+order: 4492313521609398

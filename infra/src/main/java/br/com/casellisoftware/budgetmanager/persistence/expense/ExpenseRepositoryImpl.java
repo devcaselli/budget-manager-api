@@ -52,4 +52,9 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
                 documentPage.getTotalPages()
         );
     }
+
+    @Override
+    public void deleteById(String id) {
+        this.expenseMongoRepository.deleteById(id);
+    }
 }

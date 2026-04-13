@@ -25,7 +25,8 @@ public class SaveSavePaymentUseCase implements SavePaymentBoundary {
                 Instant.now(),
                 input.details(),
                 input.expenseId(),
-                input.walletId()
+                input.walletId(),
+                input.bulletId()
         );
 
         Payment saved = paymentRepository.save(payment);

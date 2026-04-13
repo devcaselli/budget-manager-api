@@ -52,4 +52,21 @@ public class PaymentRepositoryImpl implements PaymentRepository {
                 documentPage.getTotalPages()
         );
     }
+
+    @Override
+    public void deleteById(String id) {
+        this.paymentMongoRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Payment> findAllByExpenseId(String expenseId) {
+        return this.paymentMongoRepository.findAllByExpenseId(expenseId)
+                .stream().map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public void deleteAllById(List<String> ids) {
+        this.paymentMongoRepository.deleteAllById(ids);
+    }
 }

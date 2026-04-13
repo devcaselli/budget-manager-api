@@ -23,4 +23,5 @@ public class PaymentDocument {
     private String details;
     private String expenseId;
     private String walletId;
+    private String bulletId;
 }

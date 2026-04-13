@@ -26,4 +26,6 @@ public interface ExpenseRepository {
     Optional<Expense> findById(String id);
 
     PageResult<Expense> findByWalletId(String walletId, int page, int size);
+
+    void deleteById(String id);
 }

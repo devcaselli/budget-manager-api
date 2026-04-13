@@ -1,17 +1,24 @@
 package br.com.casellisoftware.budgetmanager.configs;
 
+import br.com.casellisoftware.budgetmanager.application.bullet.usecase.FindAllBulletsByIdsUseCase;
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.FindBulletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.PatchBulletUseCase;
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.SaveBulletUseCase;
-import br.com.casellisoftware.budgetmanager.application.expense.boundary.FindExpenseByIdBoundary;
+import br.com.casellisoftware.budgetmanager.application.expense.usecase.DeleteExpenseByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.FindExpenseByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.FindExpensesByWalletIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.PatchExpenseUseCase;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.SaveExpenseUseCase;
+import br.com.casellisoftware.budgetmanager.application.payment.usecase.DeleteAllPaymentByIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.payment.usecase.DeletePaymentByIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.payment.usecase.FindAllPaymentByExpenseIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.payment.usecase.FindPaymentByIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.payment.usecase.SaveSavePaymentUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.SaveWalletUseCase;
 import br.com.casellisoftware.budgetmanager.domain.bullet.BulletRepository;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
+import br.com.casellisoftware.budgetmanager.domain.payment.PaymentRepository;
 import br.com.casellisoftware.budgetmanager.domain.wallet.WalletRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +37,33 @@ public class BusinessLayerBeanConfiguration {
     }
 
     @Bean
+    public FindExpenseByIdUseCase findExpenseByIdUseCase(ExpenseRepository repository) {
+        return new FindExpenseByIdUseCase(repository);
+    }
+
+    @Bean
+    public PatchExpenseUseCase patchExpenseUseCase(ExpenseRepository repository) {
+        return new PatchExpenseUseCase(repository);
+    }
+
+    @Bean
+    public DeleteExpenseByIdUseCase deleteExpenseByIdUseCase(
+            ExpenseRepository expenseRepository,
+            FindExpenseByIdUseCase findExpenseByIdUseCase,
+            FindAllPaymentByExpenseIdUseCase findAllPaymentByExpenseIdUseCase,
+            FindAllBulletsByIdsUseCase findAllBulletsByIdsUseCase,
+            PatchBulletUseCase patchBulletUseCase,
+            DeleteAllPaymentByIdUseCase deleteAllPaymentByIdUseCase) {
+        return new DeleteExpenseByIdUseCase(
+                expenseRepository,
+                findExpenseByIdUseCase,
+                findAllPaymentByExpenseIdUseCase,
+                findAllBulletsByIdsUseCase,
+                patchBulletUseCase,
+                deleteAllPaymentByIdUseCase);
+    }
+
+    @Bean
     public SaveBulletUseCase saveBulletUseCase(BulletRepository repository, FindWalletByIdUseCase findWalletByIdUseCase) {
         return new SaveBulletUseCase(repository, findWalletByIdUseCase);
     }
@@ -40,27 +74,47 @@ public class BusinessLayerBeanConfiguration {
     }
 
     @Bean
+    public PatchBulletUseCase patchBulletUseCase(BulletRepository repository) {
+        return new PatchBulletUseCase(repository);
+    }
+
+    @Bean
+    public FindAllBulletsByIdsUseCase findAllBulletsByIdsUseCase(BulletRepository repository) {
+        return new FindAllBulletsByIdsUseCase(repository);
+    }
+
+    @Bean
     public SaveWalletUseCase saveWalletBoundary(WalletRepository walletRepository) {
         return new SaveWalletUseCase(walletRepository);
     }
 
     @Bean
-    public FindWalletByIdUseCase  findWalletByIdUseCase(WalletRepository walletRepository) {
+    public FindWalletByIdUseCase findWalletByIdUseCase(WalletRepository walletRepository) {
         return new FindWalletByIdUseCase(walletRepository);
     }
 
     @Bean
-    public FindExpenseByIdUseCase findExpenseByIdUseCase(ExpenseRepository repository) {
-        return new FindExpenseByIdUseCase(repository);
+    public SaveSavePaymentUseCase saveSavePaymentUseCase(PaymentRepository paymentRepository) {
+        return new SaveSavePaymentUseCase(paymentRepository);
     }
 
     @Bean
-    public PatchExpenseUseCase patchExpenseUseCase(ExpenseRepository repository){
-        return new PatchExpenseUseCase(repository);
+    public FindPaymentByIdUseCase findPaymentByIdUseCase(PaymentRepository paymentRepository) {
+        return new FindPaymentByIdUseCase(paymentRepository);
     }
 
     @Bean
-    public PatchBulletUseCase patchBulletUseCase(BulletRepository repository){
-        return new PatchBulletUseCase(repository);
+    public FindAllPaymentByExpenseIdUseCase findAllPaymentByExpenseIdUseCase(PaymentRepository paymentRepository) {
+        return new FindAllPaymentByExpenseIdUseCase(paymentRepository);
+    }
+
+    @Bean
+    public DeletePaymentByIdUseCase deletePaymentByIdUseCase(PaymentRepository paymentRepository, FindPaymentByIdUseCase findPaymentByIdUseCase) {
+        return new DeletePaymentByIdUseCase(paymentRepository, findPaymentByIdUseCase);
+    }
+
+    @Bean
+    public DeleteAllPaymentByIdUseCase deleteAllPaymentByIdUseCase(PaymentRepository paymentRepository) {
+        return new DeleteAllPaymentByIdUseCase(paymentRepository);
     }
 }

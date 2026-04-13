@@ -6,6 +6,7 @@ import br.com.casellisoftware.budgetmanager.persistence.bullet.mappers.BulletPer
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -29,5 +30,14 @@ public class BulletRepositoryImpl implements BulletRepository {
     @Override
     public Optional<Bullet> findById(String id) {
         return bulletMongoRepository.findById(id).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<Bullet> findAllByIds(List<String> ids) {
+        return this.bulletMongoRepository
+                .findAllById(ids)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 }

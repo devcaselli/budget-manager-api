@@ -9,6 +9,7 @@ public record PaymentOutput(
         Instant paymentDate,
         String details,
         String expenseId,
-        String walletId
+        String walletId,
+        String bulletId
 ) {
 }

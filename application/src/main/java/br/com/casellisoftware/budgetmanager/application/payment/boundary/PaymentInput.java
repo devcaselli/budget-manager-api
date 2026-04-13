@@ -6,6 +6,7 @@ public record PaymentInput (
         BigDecimal amount,
         String details,
         String expenseId,
-        String walletId
+        String walletId,
+        String bulletId
 ) {
 }

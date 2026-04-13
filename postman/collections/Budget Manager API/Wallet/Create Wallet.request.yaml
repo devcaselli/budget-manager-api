@@ -9,10 +9,10 @@ body:
   type: json
   content: |-
     {
-      "description": "Main wallet",
-      "budget": 1000.00,
-      "startDate": "2026-04-10",
-      "closedDate": "2026-04-13",
+      "description": "Testes",
+      "budget": 10000.00,
+      "startDate": "2026-06-10",
+      "closedDate": "2026-07-13",
       "closed": false
     }
 scripts:
@@ -21,4 +21,8 @@ scripts:
       pm.test("Status code is 201", function () {
         pm.response.to.have.status(201);
       });
+
+
+      var id = pm.response.json().id;
+      pm.collectionVariables.set("walletId", id);
     language: text/javascript

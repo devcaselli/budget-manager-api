@@ -2,6 +2,7 @@ package br.com.casellisoftware.budgetmanager.domain.payment;
 
 import br.com.casellisoftware.budgetmanager.domain.shared.PageResult;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -26,4 +27,10 @@ public interface PaymentRepository {
     Optional<Payment> findById(String id);
 
     PageResult<Payment> findByWalletId(String walletId, int page, int size);
+
+    void deleteById(String id);
+
+    List<Payment> findAllByExpenseId(String expenseId);
+
+    void deleteAllById(List<String> ids);
 }

@@ -1,0 +1,5 @@
+$kind: http-request
+name: Delete
+url: "{{baseUrl}}/expenses/{{expenseId}}"
+method: DELETE
+order: 3644077305233407
