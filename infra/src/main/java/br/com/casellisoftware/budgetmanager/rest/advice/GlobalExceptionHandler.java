@@ -1,5 +1,6 @@
 package br.com.casellisoftware.budgetmanager.rest.advice;
 
+import br.com.casellisoftware.budgetmanager.domain.bullet.BulletNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.wallet.exception.WalletNotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -91,6 +92,17 @@ public class GlobalExceptionHandler {
         problem.setProperty("errors", fieldErrors);
         problem.setProperty(CORRELATION_ID, newCorrelationId());
         return problemResponse(HttpStatus.BAD_REQUEST, problem);
+    }
+
+    @ExceptionHandler(BulletNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleBulletNotFound(BulletNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage()
+        );
+        problem.setTitle("Bullet not found");
+        problem.setProperty(CORRELATION_ID, newCorrelationId());
+        return problemResponse(HttpStatus.NOT_FOUND, problem);
     }
 
     @ExceptionHandler(ExpenseNotFoundException.class)
