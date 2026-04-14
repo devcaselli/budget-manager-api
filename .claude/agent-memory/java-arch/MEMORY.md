@@ -1,3 +1,3 @@
 - [User profile](user_profile.md) — Developer values clean-arch/SOLID rigor, Big-O analysis, and code-size reduction; communicates in Portuguese
 - [Project conventions](project_conventions.md) — Plain use-case classes wired via @Bean config (no @Service), records for all DTOs, hand-written assemblers
-- [Payment module issues](payment_module_issues.md) — PaymentService orchestrates across domains from infra layer; multiple layering violations open as potential work
+- [Architectural findings](payment_module_issues.md) — 2026-04-14 full-project review: standing bugs (Bullet.paymentId, Mongo URI, Payment currency), DIP cascade, SaaS gaps
