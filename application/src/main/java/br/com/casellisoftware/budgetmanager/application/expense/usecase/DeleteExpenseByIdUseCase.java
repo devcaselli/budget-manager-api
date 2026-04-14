@@ -8,7 +8,7 @@ import br.com.casellisoftware.budgetmanager.application.expense.boundary.DeleteE
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
 import br.com.casellisoftware.budgetmanager.application.payment.boundary.PaymentOutput;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.DeleteAllPaymentByIdUseCase;
-import br.com.casellisoftware.budgetmanager.application.payment.usecase.FindAllPaymentByExpenseIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.payment.boundary.FindAllPaymentByExpenseIdBoundary;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 
 import java.math.BigDecimal;
@@ -20,14 +20,14 @@ public class DeleteExpenseByIdUseCase implements DeleteExpenseByIdBoundary {
 
     private final ExpenseRepository expenseRepository;
     private final FindExpenseByIdUseCase findExpenseByIdUseCase;
-    private final FindAllPaymentByExpenseIdUseCase findAllPaymentByExpenseIdUseCase;
+    private final FindAllPaymentByExpenseIdBoundary findAllPaymentByExpenseIdUseCase;
     private final FindAllBulletsByIdsUseCase findAllBulletsByIdsUseCase;
     private final PatchBulletUseCase patchBulletUseCase;
     private final DeleteAllPaymentByIdUseCase deleteAllPaymentByIdUseCase;
 
     public DeleteExpenseByIdUseCase(ExpenseRepository expenseRepository,
                                     FindExpenseByIdUseCase findExpenseByIdUseCase,
-                                    FindAllPaymentByExpenseIdUseCase findAllPaymentByExpenseIdUseCase,
+                                    FindAllPaymentByExpenseIdBoundary findAllPaymentByExpenseIdUseCase,
                                     FindAllBulletsByIdsUseCase findAllBulletsByIdsUseCase,
                                     PatchBulletUseCase patchBulletUseCase,
                                     DeleteAllPaymentByIdUseCase deleteAllPaymentByIdUseCase) {

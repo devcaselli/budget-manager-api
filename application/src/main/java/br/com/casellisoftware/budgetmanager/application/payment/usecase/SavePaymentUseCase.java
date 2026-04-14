@@ -9,11 +9,11 @@ import br.com.casellisoftware.budgetmanager.domain.payment.PaymentRepository;
 
 import java.time.Instant;
 
-public class SaveSavePaymentUseCase implements SavePaymentBoundary {
+public class SavePaymentUseCase implements SavePaymentBoundary {
 
     private final PaymentRepository paymentRepository;
 
-    public SaveSavePaymentUseCase(PaymentRepository paymentRepository) {
+    public SavePaymentUseCase(PaymentRepository paymentRepository) {
         this.paymentRepository = paymentRepository;
     }
 

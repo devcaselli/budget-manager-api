@@ -9,11 +9,13 @@ import br.com.casellisoftware.budgetmanager.application.expense.usecase.FindExpe
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.FindExpensesByWalletIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.PatchExpenseUseCase;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.SaveExpenseUseCase;
+import br.com.casellisoftware.budgetmanager.application.payment.boundary.FindAllPaymentByExpenseIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.DeleteAllPaymentByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.DeletePaymentByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.FindAllPaymentByExpenseIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.FindPaymentByIdUseCase;
-import br.com.casellisoftware.budgetmanager.application.payment.usecase.SaveSavePaymentUseCase;
+import br.com.casellisoftware.budgetmanager.application.payment.usecase.PayExpenseUseCase;
+import br.com.casellisoftware.budgetmanager.application.payment.usecase.SavePaymentUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.SaveWalletUseCase;
 import br.com.casellisoftware.budgetmanager.domain.bullet.BulletRepository;
@@ -50,14 +52,14 @@ public class BusinessLayerBeanConfiguration {
     public DeleteExpenseByIdUseCase deleteExpenseByIdUseCase(
             ExpenseRepository expenseRepository,
             FindExpenseByIdUseCase findExpenseByIdUseCase,
-            FindAllPaymentByExpenseIdUseCase findAllPaymentByExpenseIdUseCase,
+            FindAllPaymentByExpenseIdBoundary findAllPaymentByExpenseIdBoundary,
             FindAllBulletsByIdsUseCase findAllBulletsByIdsUseCase,
             PatchBulletUseCase patchBulletUseCase,
             DeleteAllPaymentByIdUseCase deleteAllPaymentByIdUseCase) {
         return new DeleteExpenseByIdUseCase(
                 expenseRepository,
                 findExpenseByIdUseCase,
-                findAllPaymentByExpenseIdUseCase,
+                findAllPaymentByExpenseIdBoundary,
                 findAllBulletsByIdsUseCase,
                 patchBulletUseCase,
                 deleteAllPaymentByIdUseCase);
@@ -94,8 +96,8 @@ public class BusinessLayerBeanConfiguration {
     }
 
     @Bean
-    public SaveSavePaymentUseCase saveSavePaymentUseCase(PaymentRepository paymentRepository) {
-        return new SaveSavePaymentUseCase(paymentRepository);
+    public SavePaymentUseCase savePaymentUseCase(PaymentRepository paymentRepository) {
+        return new SavePaymentUseCase(paymentRepository);
     }
 
     @Bean
@@ -116,5 +118,12 @@ public class BusinessLayerBeanConfiguration {
     @Bean
     public DeleteAllPaymentByIdUseCase deleteAllPaymentByIdUseCase(PaymentRepository paymentRepository) {
         return new DeleteAllPaymentByIdUseCase(paymentRepository);
+    }
+
+    @Bean
+    public PayExpenseUseCase payExpenseUseCase(PaymentRepository paymentRepository,
+                                               ExpenseRepository expenseRepository,
+                                               BulletRepository bulletRepository) {
+        return new PayExpenseUseCase(paymentRepository, expenseRepository, bulletRepository);
     }
 }

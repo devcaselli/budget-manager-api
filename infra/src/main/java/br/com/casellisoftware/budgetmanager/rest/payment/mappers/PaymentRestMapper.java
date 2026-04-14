@@ -1,12 +1,29 @@
 package br.com.casellisoftware.budgetmanager.rest.payment.mappers;
 
-import br.com.casellisoftware.budgetmanager.application.payment.boundary.PaymentInput;
-import br.com.casellisoftware.budgetmanager.domain.payment.Payment;
+import br.com.casellisoftware.budgetmanager.application.payment.boundary.PayExpenseInput;
+import br.com.casellisoftware.budgetmanager.rest.payment.dtos.PayRequestDto;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.NullValueCheckStrategy;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper
+/**
+ * Strict MapStruct mapper for REST DTO ↔ application boundary records
+ * for the payment flow.
+ */
+@Mapper(
+        componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.ERROR,
+        unmappedSourcePolicy = ReportingPolicy.ERROR,
+        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS
+)
 public interface PaymentRestMapper {
 
-
-    PaymentInput paymentDomainToPaymentInput(Payment payment);
+    @Mapping(target = "amount", source = "request.payment.amount")
+    @Mapping(target = "paymentDate", source = "request.payment.paymentDate")
+    @Mapping(target = "details", source = "request.payment.details")
+    @Mapping(target = "expenseId", source = "request.expenseId")
+    @Mapping(target = "bulletId", source = "request.bulletId")
+    @Mapping(target = "walletId", source = "walletId")
+    PayExpenseInput toPayExpenseInput(PayRequestDto request, String walletId);
 }
