@@ -6,7 +6,7 @@ import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import java.util.Objects;
 import java.util.UUID;
 
-public class Bullet {
+public final class Bullet {
 
     private final String id;
     private final String description;

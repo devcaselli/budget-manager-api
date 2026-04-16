@@ -1,6 +1,7 @@
 package br.com.casellisoftware.budgetmanager.rest.payment;
 
 import br.com.casellisoftware.budgetmanager.application.payment.boundary.PayExpenseBoundary;
+import br.com.casellisoftware.budgetmanager.application.payment.boundary.PaymentOutput;
 import br.com.casellisoftware.budgetmanager.rest.payment.dtos.PayRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.payment.mappers.PaymentRestMapper;
 import jakarta.validation.Valid;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Validated
 @RestController
@@ -26,7 +28,11 @@ public class PaymentController {
     @PostMapping
     public ResponseEntity<Void> pay(@Valid @RequestBody PayRequestDto request,
                                     @RequestParam("walletId") @NotBlank String walletId) {
-        payExpenseBoundary.execute(mapper.toPayExpenseInput(request, walletId));
-        return ResponseEntity.noContent().build();
+        final PaymentOutput output = payExpenseBoundary.execute(mapper.toPayExpenseInput(request, walletId));
+        final var location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/payments/{id}")
+                .buildAndExpand(output.id())
+                .toUri();
+        return ResponseEntity.created(location).build();
     }
 }

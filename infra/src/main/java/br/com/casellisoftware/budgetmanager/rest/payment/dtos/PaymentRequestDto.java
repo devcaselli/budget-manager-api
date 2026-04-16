@@ -13,6 +13,7 @@ public record PaymentRequestDto(
         BigDecimal amount,
 
         @NotNull(message = "paymentDate is required")
+        // Instant is the contract type end-to-end (DTO → domain → persistence); UTC avoids timezone drift across regions.
         @PastOrPresent(message = "paymentDate cannot be in the future")
         Instant paymentDate,
 
