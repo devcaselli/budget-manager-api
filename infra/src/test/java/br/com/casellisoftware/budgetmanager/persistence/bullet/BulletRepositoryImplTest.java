@@ -3,7 +3,7 @@ package br.com.casellisoftware.budgetmanager.persistence.bullet;
 import br.com.casellisoftware.budgetmanager.AbstractMongoIntegrationTest;
 import br.com.casellisoftware.budgetmanager.domain.bullet.Bullet;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
-import br.com.casellisoftware.budgetmanager.persistence.bullet.mappers.BulletPersistenceMapper;
+import br.com.casellisoftware.budgetmanager.persistence.bullet.mappers.BulletPersistenceMapperImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -12,7 +12,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Import({BulletRepositoryImpl.class, BulletPersistenceMapper.class})
+@Import({BulletRepositoryImpl.class, BulletPersistenceMapperImpl.class})
 class BulletRepositoryImplTest extends AbstractMongoIntegrationTest {
 
     @Autowired

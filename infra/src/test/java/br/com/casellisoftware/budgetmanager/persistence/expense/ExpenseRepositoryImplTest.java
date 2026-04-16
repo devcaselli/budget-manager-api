@@ -4,7 +4,7 @@ import br.com.casellisoftware.budgetmanager.AbstractMongoIntegrationTest;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.domain.shared.PageResult;
-import br.com.casellisoftware.budgetmanager.persistence.expense.mappers.ExpensePersistenceMapper;
+import br.com.casellisoftware.budgetmanager.persistence.expense.mappers.ExpensePersistenceMapperImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -14,7 +14,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Import({ExpenseRepositoryImpl.class, ExpensePersistenceMapper.class})
+@Import({ExpenseRepositoryImpl.class, ExpensePersistenceMapperImpl.class})
 class ExpenseRepositoryImplTest extends AbstractMongoIntegrationTest {
 
     @Autowired

@@ -1,5 +1,6 @@
 package br.com.casellisoftware.budgetmanager.rest.expense;
 
+import br.com.casellisoftware.budgetmanager.application.expense.boundary.DeleteExpenseByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseInput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.FindExpensesByWalletIdBoundary;
@@ -69,6 +70,9 @@ class ExpenseControllerTest {
 
     @MockitoBean
     private FindExpensesByWalletIdBoundary findExpensesByWalletIdBoundary;
+
+    @MockitoBean
+    private DeleteExpenseByIdBoundary deleteExpenseByIdBoundary;
 
     @MockitoBean
     private ExpenseRestMapper mapper;
