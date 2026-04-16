@@ -15,7 +15,7 @@ import br.com.casellisoftware.budgetmanager.application.payment.usecase.DeletePa
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.FindAllPaymentByExpenseIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.FindPaymentByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.PayExpenseUseCase;
-import br.com.casellisoftware.budgetmanager.application.payment.usecase.SavePaymentUseCase;
+import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.SaveWalletUseCase;
 import br.com.casellisoftware.budgetmanager.domain.bullet.BulletRepository;
@@ -29,13 +29,13 @@ import org.springframework.context.annotation.Configuration;
 public class BusinessLayerBeanConfiguration {
 
     @Bean
-    public SaveExpenseUseCase saveExpenseUseCase(ExpenseRepository repository, FindWalletByIdUseCase findWalletByIdUseCase) {
-        return new SaveExpenseUseCase(repository, findWalletByIdUseCase);
+    public SaveExpenseUseCase saveExpenseUseCase(ExpenseRepository repository, FindWalletByIdBoundary findWalletByIdBoundary) {
+        return new SaveExpenseUseCase(repository, findWalletByIdBoundary);
     }
 
     @Bean
-    public FindExpensesByWalletIdUseCase findExpensesByWalletIdUseCase(ExpenseRepository repository, FindWalletByIdUseCase findWalletByIdUseCase) {
-        return new FindExpensesByWalletIdUseCase(repository, findWalletByIdUseCase);
+    public FindExpensesByWalletIdUseCase findExpensesByWalletIdUseCase(ExpenseRepository repository, FindWalletByIdBoundary findWalletByIdBoundary) {
+        return new FindExpensesByWalletIdUseCase(repository, findWalletByIdBoundary);
     }
 
     @Bean
@@ -66,8 +66,8 @@ public class BusinessLayerBeanConfiguration {
     }
 
     @Bean
-    public SaveBulletUseCase saveBulletUseCase(BulletRepository repository, FindWalletByIdUseCase findWalletByIdUseCase) {
-        return new SaveBulletUseCase(repository, findWalletByIdUseCase);
+    public SaveBulletUseCase saveBulletUseCase(BulletRepository repository, FindWalletByIdBoundary findWalletByIdBoundary) {
+        return new SaveBulletUseCase(repository, findWalletByIdBoundary);
     }
 
     @Bean
@@ -91,13 +91,8 @@ public class BusinessLayerBeanConfiguration {
     }
 
     @Bean
-    public FindWalletByIdUseCase findWalletByIdUseCase(WalletRepository walletRepository) {
+    public FindWalletByIdBoundary findWalletByIdBoundary(WalletRepository walletRepository) {
         return new FindWalletByIdUseCase(walletRepository);
-    }
-
-    @Bean
-    public SavePaymentUseCase savePaymentUseCase(PaymentRepository paymentRepository) {
-        return new SavePaymentUseCase(paymentRepository);
     }
 
     @Bean

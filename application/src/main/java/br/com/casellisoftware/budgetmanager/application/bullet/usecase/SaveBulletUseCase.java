@@ -4,7 +4,7 @@ import br.com.casellisoftware.budgetmanager.application.bullet.boundary.BulletIn
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.BulletOutput;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.BulletOutputAssembler;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.SaveBulletBoundary;
-import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.domain.bullet.Bullet;
 import br.com.casellisoftware.budgetmanager.domain.bullet.BulletRepository;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
@@ -16,19 +16,19 @@ public class SaveBulletUseCase implements SaveBulletBoundary {
     private static final Logger log = LoggerFactory.getLogger(SaveBulletUseCase.class);
 
     private final BulletRepository bulletRepository;
-    private final FindWalletByIdUseCase findWalletByIdUseCase;
+    private final FindWalletByIdBoundary findWalletByIdBoundary;
 
     public SaveBulletUseCase(BulletRepository bulletRepository,
-                             FindWalletByIdUseCase findWalletByIdUseCase) {
+                             FindWalletByIdBoundary findWalletByIdBoundary) {
         this.bulletRepository = bulletRepository;
-        this.findWalletByIdUseCase = findWalletByIdUseCase;
+        this.findWalletByIdBoundary = findWalletByIdBoundary;
     }
 
     @Override
     public BulletOutput execute(BulletInput input) {
         log.info("Saving bullet for walletId={}", input.walletId());
 
-        String walletId = findWalletByIdUseCase.execute(input.walletId()).id();
+        String walletId = findWalletByIdBoundary.findById(input.walletId()).id();
 
         Money budget = Money.of(input.budget());
         Bullet bullet = Bullet.create(input.description(), budget, budget, walletId);

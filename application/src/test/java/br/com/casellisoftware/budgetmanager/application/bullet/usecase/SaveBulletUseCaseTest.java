@@ -3,7 +3,7 @@ package br.com.casellisoftware.budgetmanager.application.bullet.usecase;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.BulletInput;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.BulletOutput;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOutput;
-import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.domain.bullet.Bullet;
 import br.com.casellisoftware.budgetmanager.domain.bullet.BulletRepository;
 import br.com.casellisoftware.budgetmanager.domain.wallet.exception.WalletNotFoundException;
@@ -30,7 +30,7 @@ class SaveBulletUseCaseTest {
     private BulletRepository bulletRepository;
 
     @Mock
-    private FindWalletByIdUseCase findWalletByIdUseCase;
+    private FindWalletByIdBoundary findWalletByIdBoundary;
 
     private SaveBulletUseCase useCase;
 
@@ -38,14 +38,14 @@ class SaveBulletUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new SaveBulletUseCase(bulletRepository, findWalletByIdUseCase);
+        useCase = new SaveBulletUseCase(bulletRepository, findWalletByIdBoundary);
         input = new BulletInput("rent", new BigDecimal("1500.00"), "wallet-1");
     }
 
     private void stubWalletExists() {
         WalletOutput walletOutput = new WalletOutput("wallet-1", "Test Wallet",
                 new BigDecimal("5000.00"), new BigDecimal("5000.00"), null, null, false);
-        when(findWalletByIdUseCase.execute("wallet-1")).thenReturn(walletOutput);
+        when(findWalletByIdBoundary.findById("wallet-1")).thenReturn(walletOutput);
     }
 
     @Test
@@ -74,7 +74,7 @@ class SaveBulletUseCaseTest {
 
     @Test
     void execute_walletNotFound_propagatesAndDoesNotTouchRepository() {
-        when(findWalletByIdUseCase.execute("nonexistent"))
+        when(findWalletByIdBoundary.findById("nonexistent"))
                 .thenThrow(new WalletNotFoundException("nonexistent"));
 
         BulletInput invalidInput = new BulletInput("rent", new BigDecimal("1500.00"), "nonexistent");

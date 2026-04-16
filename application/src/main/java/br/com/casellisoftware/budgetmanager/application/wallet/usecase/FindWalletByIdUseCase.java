@@ -1,5 +1,6 @@
 package br.com.casellisoftware.budgetmanager.application.wallet.usecase;
 
+import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOutput;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOutputAssembler;
 import br.com.casellisoftware.budgetmanager.domain.wallet.Wallet;
@@ -9,20 +10,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class FindWalletByIdUseCase {
+public class FindWalletByIdUseCase implements FindWalletByIdBoundary {
 
-    public static final Logger log =  LoggerFactory.getLogger(FindWalletByIdUseCase.class);
+    private static final Logger log = LoggerFactory.getLogger(FindWalletByIdUseCase.class);
 
-    private final WalletRepository  walletRepository;
+    private final WalletRepository walletRepository;
 
     public FindWalletByIdUseCase(WalletRepository walletRepository) {
         this.walletRepository = walletRepository;
     }
 
-    public WalletOutput execute(String id){
+    @Override
+    public WalletOutput findById(String id) {
         log.info("Finding wallet by id {}", id);
         Wallet wallet = walletRepository.findById(id)
-                .orElseThrow(() -> new WalletNotFoundException("Wallet not found, id: "+id));
+                .orElseThrow(() -> new WalletNotFoundException("Wallet not found, id: " + id));
 
         log.info("Wallet found {}", wallet);
         return WalletOutputAssembler.from(wallet);

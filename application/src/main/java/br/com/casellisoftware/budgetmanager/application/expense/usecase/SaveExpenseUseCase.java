@@ -4,8 +4,8 @@ import br.com.casellisoftware.budgetmanager.application.expense.boundary.Expense
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutputAssembler;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.SaveExpenseBoundary;
+import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOutput;
-import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
@@ -18,11 +18,11 @@ public class SaveExpenseUseCase implements SaveExpenseBoundary {
     private static final Logger log = LoggerFactory.getLogger(SaveExpenseUseCase.class);
 
     private final ExpenseRepository expenseRepository;
-    private final FindWalletByIdUseCase  findWalletByIdUseCase;
+    private final FindWalletByIdBoundary findWalletByIdBoundary;
 
-    public SaveExpenseUseCase(ExpenseRepository expenseRepository, FindWalletByIdUseCase findWalletByIdUseCase) {
+    public SaveExpenseUseCase(ExpenseRepository expenseRepository, FindWalletByIdBoundary findWalletByIdBoundary) {
         this.expenseRepository = expenseRepository;
-        this.findWalletByIdUseCase = findWalletByIdUseCase;
+        this.findWalletByIdBoundary = findWalletByIdBoundary;
     }
 
     @Override
@@ -42,8 +42,8 @@ public class SaveExpenseUseCase implements SaveExpenseBoundary {
         return ExpenseOutputAssembler.from(saved);
     }
 
-    private String checkIfWalletExists(String walletId){
-        WalletOutput execute = this.findWalletByIdUseCase.execute(walletId);
-        return execute.id();
+    private String checkIfWalletExists(String walletId) {
+        WalletOutput walletOutput = this.findWalletByIdBoundary.findById(walletId);
+        return walletOutput.id();
     }
 }

@@ -4,14 +4,13 @@ import br.com.casellisoftware.budgetmanager.application.expense.boundary.Expense
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.SaveExpenseUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOutput;
-import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -31,16 +30,15 @@ class SaveExpenseUseCaseTest {
     private ExpenseRepository expenseRepository;
 
     @Mock
-    private FindWalletByIdUseCase findWalletByIdUseCase;
+    private FindWalletByIdBoundary findWalletByIdBoundary;
 
-    @InjectMocks
     private SaveExpenseUseCase useCase;
 
     private ExpenseInput input;
 
     @BeforeEach
     void setUp() {
-        useCase = new SaveExpenseUseCase(expenseRepository, findWalletByIdUseCase);
+        useCase = new SaveExpenseUseCase(expenseRepository, findWalletByIdBoundary);
         input = new ExpenseInput(
                 "lunch",
                 new BigDecimal("25.50"),
@@ -50,7 +48,7 @@ class SaveExpenseUseCaseTest {
 
         // Mock the wallet lookup to return a valid wallet
         WalletOutput walletOutput = new WalletOutput("wallet-1", "Test Wallet", new BigDecimal("100.00"), new BigDecimal("100.0"), null, null, false);
-        when(findWalletByIdUseCase.execute("wallet-1")).thenReturn(walletOutput);
+        when(findWalletByIdBoundary.findById("wallet-1")).thenReturn(walletOutput);
     }
 
     @Test

@@ -2,7 +2,7 @@ package br.com.casellisoftware.budgetmanager.application.expense.usecase;
 
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOutput;
-import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
@@ -30,7 +30,7 @@ class FindExpensesByWalletIdUseCaseTest {
     private ExpenseRepository expenseRepository;
 
     @Mock
-    private FindWalletByIdUseCase findWalletByIdUseCase;
+    private FindWalletByIdBoundary findWalletByIdBoundary;
 
     private FindExpensesByWalletIdUseCase useCase;
 
@@ -39,14 +39,14 @@ class FindExpensesByWalletIdUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new FindExpensesByWalletIdUseCase(expenseRepository, findWalletByIdUseCase);
+        useCase = new FindExpensesByWalletIdUseCase(expenseRepository, findWalletByIdBoundary);
     }
 
     @Test
     void execute_happyPath_returnsMappedPagedOutput() {
         WalletOutput walletOutput = new WalletOutput(WALLET_ID, "Test Wallet",
                 new BigDecimal("100.00"), new BigDecimal("100.00"), null, null, false);
-        when(findWalletByIdUseCase.execute(WALLET_ID)).thenReturn(walletOutput);
+        when(findWalletByIdBoundary.findById(WALLET_ID)).thenReturn(walletOutput);
 
         Expense expense1 = Expense.create(WALLET_ID, "lunch", Money.of("10.50"), PURCHASE_DATE);
         Expense expense2 = Expense.create(WALLET_ID, "coffee", Money.of("5.00"), PURCHASE_DATE);
@@ -72,7 +72,7 @@ class FindExpensesByWalletIdUseCaseTest {
     void execute_emptyPage_returnsEmptyContent() {
         WalletOutput walletOutput = new WalletOutput(WALLET_ID, "Test Wallet",
                 new BigDecimal("100.00"), new BigDecimal("100.00"), null, null, false);
-        when(findWalletByIdUseCase.execute(WALLET_ID)).thenReturn(walletOutput);
+        when(findWalletByIdBoundary.findById(WALLET_ID)).thenReturn(walletOutput);
 
         PageResult<Expense> emptyPage = new PageResult<>(List.of(), 0, 10, 0, 0);
         when(expenseRepository.findByWalletId(WALLET_ID, 0, 10)).thenReturn(emptyPage);
@@ -86,7 +86,7 @@ class FindExpensesByWalletIdUseCaseTest {
 
     @Test
     void execute_walletNotFound_propagatesException() {
-        when(findWalletByIdUseCase.execute("nonexistent"))
+        when(findWalletByIdBoundary.findById("nonexistent"))
                 .thenThrow(new WalletNotFoundException("nonexistent"));
 
         assertThatThrownBy(() -> useCase.execute("nonexistent", 0, 10))
@@ -99,7 +99,7 @@ class FindExpensesByWalletIdUseCaseTest {
     void execute_repositoryFails_propagates() {
         WalletOutput walletOutput = new WalletOutput(WALLET_ID, "Test Wallet",
                 new BigDecimal("100.00"), new BigDecimal("100.00"), null, null, false);
-        when(findWalletByIdUseCase.execute(WALLET_ID)).thenReturn(walletOutput);
+        when(findWalletByIdBoundary.findById(WALLET_ID)).thenReturn(walletOutput);
 
         RuntimeException boom = new RuntimeException("mongo down");
         when(expenseRepository.findByWalletId(WALLET_ID, 0, 10)).thenThrow(boom);

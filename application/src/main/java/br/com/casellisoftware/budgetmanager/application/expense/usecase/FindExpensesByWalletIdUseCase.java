@@ -3,7 +3,7 @@ package br.com.casellisoftware.budgetmanager.application.expense.usecase;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutputAssembler;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.FindExpensesByWalletIdBoundary;
-import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 import br.com.casellisoftware.budgetmanager.domain.shared.PageResult;
@@ -17,19 +17,19 @@ public class FindExpensesByWalletIdUseCase implements FindExpensesByWalletIdBoun
     private static final Logger log = LoggerFactory.getLogger(FindExpensesByWalletIdUseCase.class);
 
     private final ExpenseRepository expenseRepository;
-    private final FindWalletByIdUseCase findWalletByIdUseCase;
+    private final FindWalletByIdBoundary findWalletByIdBoundary;
 
     public FindExpensesByWalletIdUseCase(ExpenseRepository expenseRepository,
-                                         FindWalletByIdUseCase findWalletByIdUseCase) {
+                                         FindWalletByIdBoundary findWalletByIdBoundary) {
         this.expenseRepository = expenseRepository;
-        this.findWalletByIdUseCase = findWalletByIdUseCase;
+        this.findWalletByIdBoundary = findWalletByIdBoundary;
     }
 
     @Override
     public PageResult<ExpenseOutput> execute(String walletId, int page, int size) {
         log.info("Finding expenses for walletId={}, page={}, size={}", walletId, page, size);
 
-        findWalletByIdUseCase.execute(walletId);
+        findWalletByIdBoundary.findById(walletId);
 
         PageResult<Expense> expensePage = expenseRepository.findByWalletId(walletId, page, size);
 
