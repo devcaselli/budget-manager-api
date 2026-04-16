@@ -10,7 +10,7 @@ Full architectural review completed on 2026-04-14 and persisted to `RAIO-X_ARQUI
 
 1. **`Bullet.paymentId` is singular** — overwrites on every `Bullet.pay(Payment)`. Either make it a list (symmetric to `Expense.paymentIds`) or drop the field; the reverse relation already lives on `Payment.bulletId`.
 
-2. **`spring.mongodb.uri` in `application-dev.yaml` is wrong** — Spring Boot reads `spring.data.mongodb.uri`; current key is silently ignored and the dev app connects to the default fallback URI. Trivial fix, very easy to miss.
+2. ~~**`spring.mongodb.uri` is wrong**~~ **FALSE POSITIVE (2026-04-15).** The project uses Spring Boot 4.0.5 where `MongoProperties` lives in `spring-boot-mongodb` with `@ConfigurationProperties("spring.mongodb")`. The current config `spring.mongodb.uri` IS correct. The raio-x was written with Spring Boot 3.x knowledge (`spring.data.mongodb.uri`). Changing to `spring.data.mongodb.uri` breaks the app.
 
 3. **`PaymentPersistenceMapper` loses currency AND is the only MapStruct mapper without `unmappedTargetPolicy=ERROR`.** `Payment` uses `BigDecimal amount` directly (no `Money`), unlike Expense/Bullet/Wallet. If we model Payment with `Money`, we buy invariant "payment.currency == expense.currency == bullet.currency".
 

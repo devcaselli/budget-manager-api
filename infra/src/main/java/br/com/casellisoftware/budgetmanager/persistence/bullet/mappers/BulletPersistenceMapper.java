@@ -40,7 +40,7 @@ public interface BulletPersistenceMapper {
         } else {
             currency = Currency.getInstance(document.getCurrency());
         }
-        return new Bullet(
+        return Bullet.rebuild(
                 document.getId(),
                 document.getDescription(),
                 Money.of(document.getBudget(), currency),

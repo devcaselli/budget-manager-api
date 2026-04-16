@@ -8,12 +8,11 @@ import java.util.UUID;
 
 public class Bullet {
 
-    private final  String id;
+    private final String id;
     private final String description;
     private final Money budget;
     private final Money remaining;
     private final String walletId;
-    private final String paymentId;
 
     public Bullet(String id, String description, Money budget, Money remaining, String walletId) {
         this.id = id;
@@ -21,36 +20,23 @@ public class Bullet {
         this.budget = budget;
         this.remaining = remaining;
         this.walletId = walletId;
-        this.paymentId = null;
     }
-
-    public Bullet(String id, String description, Money budget, Money remaining, String walletId, String paymentId) {
-        this.id = id;
-        this.description = description;
-        this.budget = budget;
-        this.remaining = remaining;
-        this.walletId = walletId;
-        this.paymentId = paymentId;
-    }
-
 
     public Bullet debit(Money amount) {
         Money newRemaining = this.remaining.debitBy(amount);
-        return new Bullet(this.id, this.description, this.budget, newRemaining, this.walletId, this.paymentId);
+        return new Bullet(this.id, this.description, this.budget, newRemaining, this.walletId);
     }
 
-    public Bullet pay(Payment payment){
-        Bullet paid = create(this.id, this.description, this.budget, this.remaining, this.walletId, payment.getId());
-        return paid.debit(Money.of(payment.getAmount()));
+    public Bullet pay(Payment payment) {
+        return this.debit(Money.of(payment.getAmount()));
     }
 
-
-    public static Bullet create(String description, Money budget, Money remaining, String walletId){
+    public static Bullet create(String description, Money budget, Money remaining, String walletId) {
         return new Bullet(UUID.randomUUID().toString(), description, budget, remaining, walletId);
     }
 
-    public static Bullet create(String id, String description, Money budget, Money remaining, String walletId, String paymentId){
-        return new Bullet(id, description, budget, remaining, walletId, paymentId);
+    public static Bullet rebuild(String id, String description, Money budget, Money remaining, String walletId) {
+        return new Bullet(id, description, budget, remaining, walletId);
     }
 
     public String getId() {
@@ -71,10 +57,6 @@ public class Bullet {
 
     public String getWalletId() {
         return walletId;
-    }
-
-    public String getPaymentId() {
-        return paymentId;
     }
 
     @Override
