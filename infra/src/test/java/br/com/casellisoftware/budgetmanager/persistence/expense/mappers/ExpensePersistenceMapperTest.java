@@ -31,12 +31,14 @@ class ExpensePersistenceMapperTest {
         assertThat(document.getCurrency()).isEqualTo("BRL");
         assertThat(document.getPurchaseDate()).isEqualTo(PURCHASE_DATE);
         assertThat(document.getWalletId()).isEqualTo("wallet-1");
+        assertThat(document.getVersion()).isNull();
     }
 
     @Test
     void toDomain_copiesAllFields() {
         ExpenseDocument document = new ExpenseDocument(
                 "id-1",
+                null,
                 "coffee",
                 new BigDecimal("5.00"),
                 new BigDecimal("2.50"),
@@ -62,6 +64,7 @@ class ExpensePersistenceMapperTest {
     void toDomain_whenCurrencyMissing_fallsBackToDefault() {
         ExpenseDocument document = new ExpenseDocument(
                 "id-2",
+                null,
                 "legacy",
                 new BigDecimal("1.00"),
                 new BigDecimal("1.00"),

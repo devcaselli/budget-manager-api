@@ -27,12 +27,13 @@ class BulletPersistenceMapperTest {
         assertThat(document.getRemaining()).isEqualByComparingTo("500.00");
         assertThat(document.getCurrency()).isEqualTo("BRL");
         assertThat(document.getWalletId()).isEqualTo("wallet-1");
+        assertThat(document.getVersion()).isNull();
     }
 
     @Test
     void toDomain_copiesAllFields() {
         BulletDocument document = new BulletDocument(
-                "id-1", "groceries", new BigDecimal("300.00"),
+                "id-1", null, "groceries", new BigDecimal("300.00"),
                 new BigDecimal("150.00"), "BRL", "wallet-2"
         );
 
@@ -49,7 +50,7 @@ class BulletPersistenceMapperTest {
     @Test
     void toDomain_whenCurrencyMissing_fallsBackToDefault() {
         BulletDocument document = new BulletDocument(
-                "id-2", "legacy", new BigDecimal("1.00"),
+                "id-2", null, "legacy", new BigDecimal("1.00"),
                 new BigDecimal("1.00"), null, "wallet-legacy"
         );
 

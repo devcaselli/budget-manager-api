@@ -3,10 +3,12 @@ package br.com.casellisoftware.budgetmanager.rest.advice;
 import br.com.casellisoftware.budgetmanager.domain.bullet.BulletNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.wallet.exception.WalletNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
@@ -125,6 +127,17 @@ public class GlobalExceptionHandler {
         problem.setTitle("Wallet not found");
         problem.setProperty(CORRELATION_ID, newCorrelationId());
         return problemResponse(HttpStatus.NOT_FOUND, problem);
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ProblemDetail> handleOptimisticLock(OptimisticLockingFailureException ex, HttpServletRequest req) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
+                "The resource was modified by another request. Please retry.");
+        pd.setTitle("Concurrent modification");
+        pd.setProperty(CORRELATION_ID, newCorrelationId());
+        // WARN-level message only (no stack trace): 409 is an expected-retry signal, not an error. Stack noise would hide real incidents under retry storms.
+        log.warn("Optimistic lock conflict on {}: {}", req.getRequestURI(), ex.getMessage());
+        return problemResponse(HttpStatus.CONFLICT, pd);
     }
 
     @ExceptionHandler(DataAccessException.class)

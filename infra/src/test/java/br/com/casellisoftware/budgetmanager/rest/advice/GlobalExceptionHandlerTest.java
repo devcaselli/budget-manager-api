@@ -8,6 +8,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import tools.jackson.databind.ObjectMapper;
 import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -127,6 +128,17 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void optimisticLock_returns409_withCorrelationId() throws Exception {
+        mockMvc.perform(post("/dummy/optimistic-lock"))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.title").value("Concurrent modification"))
+                .andExpect(jsonPath("$.detail").value("The resource was modified by another request. Please retry."))
+                .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)));
+    }
+
+    @Test
     void illegalArgument_isNotSpeciallyMappedTo400() throws Exception {
         // The old handler turned any IllegalArgumentException into 400. New rule:
         // IAE is a programmer error → falls through to the generic 500 path.
@@ -165,6 +177,11 @@ class GlobalExceptionHandlerTest {
         @PostMapping("/illegal-argument")
         public String illegalArgument() {
             throw new IllegalArgumentException("should not become 400 anymore");
+        }
+
+        @PostMapping("/optimistic-lock")
+        public String optimisticLock() {
+            throw new OptimisticLockingFailureException("conflict");
         }
     }
 

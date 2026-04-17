@@ -29,6 +29,7 @@ public interface BulletPersistenceMapper {
     @Mapping(target = "budget", source = "budget.amount")
     @Mapping(target = "remaining", source = "remaining.amount")
     @Mapping(target = "currency", expression = "java(bullet.getBudget().currency().getCurrencyCode())")
+    @Mapping(target = "version", ignore = true)
     BulletDocument toDocument(Bullet bullet);
 
     default Bullet toDomain(BulletDocument document) {

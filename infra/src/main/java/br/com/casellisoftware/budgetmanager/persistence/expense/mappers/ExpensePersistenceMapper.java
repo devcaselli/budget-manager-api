@@ -30,6 +30,7 @@ public interface ExpensePersistenceMapper {
     @Mapping(target = "cost", source = "cost.amount")
     @Mapping(target = "remaining", source = "remaining.amount")
     @Mapping(target = "currency", expression = "java(expense.getCost().currency().getCurrencyCode())")
+    @Mapping(target = "version", ignore = true)
     ExpenseDocument toDocument(Expense expense);
 
     default Expense toDomain(ExpenseDocument document) {

@@ -3,3 +3,8 @@ spring:
     name: budgetmanager
   profiles:
     active: dev
+  mongodb:
+    # DEV-ONLY: auto-create indexes from @Indexed annotations. In production this
+    # must be disabled and indexes managed via Mongock migrations (see Task 38)
+    # to avoid blocking deploys on large collections.
+    auto-index-creation: true
