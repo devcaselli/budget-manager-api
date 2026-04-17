@@ -21,6 +21,7 @@ public class PaymentDocument {
     private String id;
 
     private BigDecimal amount;
+    private String currency;
     private Instant paymentDate;
     private String details;
     @Indexed

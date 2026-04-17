@@ -1,20 +1,28 @@
 package br.com.casellisoftware.budgetmanager.configs;
 
+import br.com.casellisoftware.budgetmanager.application.bullet.boundary.FindAllBulletsByIdsBoundary;
+import br.com.casellisoftware.budgetmanager.application.bullet.boundary.PatchBulletBoundary;
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.FindAllBulletsByIdsUseCase;
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.FindBulletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.PatchBulletUseCase;
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.SaveBulletUseCase;
+import br.com.casellisoftware.budgetmanager.application.expense.boundary.DeleteExpenseByIdBoundary;
+import br.com.casellisoftware.budgetmanager.application.expense.boundary.FindExpenseByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.DeleteExpenseByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.FindExpenseByIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.payment.boundary.DeleteAllPaymentByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.FindExpensesByWalletIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.PatchExpenseUseCase;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.SaveExpenseUseCase;
 import br.com.casellisoftware.budgetmanager.application.payment.boundary.FindAllPaymentByExpenseIdBoundary;
+import br.com.casellisoftware.budgetmanager.application.payment.boundary.PayExpenseBoundary;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.DeleteAllPaymentByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.DeletePaymentByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.FindAllPaymentByExpenseIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.FindPaymentByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.PayExpenseUseCase;
+import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalDeleteExpenseBoundary;
+import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalPayExpenseBoundary;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.SaveWalletUseCase;
@@ -49,20 +57,21 @@ public class BusinessLayerBeanConfiguration {
     }
 
     @Bean
-    public DeleteExpenseByIdUseCase deleteExpenseByIdUseCase(
+    public DeleteExpenseByIdBoundary deleteExpenseByIdBoundary(
             ExpenseRepository expenseRepository,
-            FindExpenseByIdUseCase findExpenseByIdUseCase,
+            FindExpenseByIdBoundary findExpenseByIdBoundary,
             FindAllPaymentByExpenseIdBoundary findAllPaymentByExpenseIdBoundary,
-            FindAllBulletsByIdsUseCase findAllBulletsByIdsUseCase,
-            PatchBulletUseCase patchBulletUseCase,
-            DeleteAllPaymentByIdUseCase deleteAllPaymentByIdUseCase) {
-        return new DeleteExpenseByIdUseCase(
+            FindAllBulletsByIdsBoundary findAllBulletsByIdsBoundary,
+            PatchBulletBoundary patchBulletBoundary,
+            DeleteAllPaymentByIdBoundary deleteAllPaymentByIdBoundary) {
+        DeleteExpenseByIdUseCase useCase = new DeleteExpenseByIdUseCase(
                 expenseRepository,
-                findExpenseByIdUseCase,
+                findExpenseByIdBoundary,
                 findAllPaymentByExpenseIdBoundary,
-                findAllBulletsByIdsUseCase,
-                patchBulletUseCase,
-                deleteAllPaymentByIdUseCase);
+                findAllBulletsByIdsBoundary,
+                patchBulletBoundary,
+                deleteAllPaymentByIdBoundary);
+        return new TransactionalDeleteExpenseBoundary(useCase);
     }
 
     @Bean
@@ -116,9 +125,10 @@ public class BusinessLayerBeanConfiguration {
     }
 
     @Bean
-    public PayExpenseUseCase payExpenseUseCase(PaymentRepository paymentRepository,
-                                               ExpenseRepository expenseRepository,
-                                               BulletRepository bulletRepository) {
-        return new PayExpenseUseCase(paymentRepository, expenseRepository, bulletRepository);
+    public PayExpenseBoundary payExpenseBoundary(PaymentRepository paymentRepository,
+                                                 ExpenseRepository expenseRepository,
+                                                 BulletRepository bulletRepository) {
+        PayExpenseUseCase useCase = new PayExpenseUseCase(paymentRepository, expenseRepository, bulletRepository);
+        return new TransactionalPayExpenseBoundary(useCase);
     }
 }

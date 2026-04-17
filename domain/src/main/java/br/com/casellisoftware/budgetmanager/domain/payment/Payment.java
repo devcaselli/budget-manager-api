@@ -1,23 +1,24 @@
 package br.com.casellisoftware.budgetmanager.domain.payment;
 
-import java.math.BigDecimal;
+import br.com.casellisoftware.budgetmanager.domain.shared.Money;
+
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public class Payment {
+public final class Payment {
 
     private final String id;
-    private final BigDecimal amount;
+    private final Money amount;
     private final Instant paymentDate;
     private final String details;
     private final String expenseId;
     private final String walletId;
     private final String bulletId;
 
-    public  Payment(String id, BigDecimal amount, Instant paymentDate, String details, String expenseId, String walletId, String bulletId) {
+    public Payment(String id, Money amount, Instant paymentDate, String details, String expenseId, String walletId, String bulletId) {
         this.id = id;
-        this.amount = amount;
+        this.amount = Objects.requireNonNull(amount, "amount must not be null");
         this.paymentDate = paymentDate;
         this.details = details;
         this.expenseId = expenseId;
@@ -25,15 +26,19 @@ public class Payment {
         this.bulletId = bulletId;
     }
 
-    public static Payment create(BigDecimal amount, Instant paymentDate, String details, String expenseId, String walletId, String bulletId) {
+    public static Payment create(Money amount, Instant paymentDate, String details, String expenseId, String walletId, String bulletId) {
         return new Payment(UUID.randomUUID().toString(), amount, paymentDate, details, expenseId, walletId, bulletId);
+    }
+
+    public static Payment rebuild(String id, Money amount, Instant paymentDate, String details, String expenseId, String walletId, String bulletId) {
+        return new Payment(id, amount, paymentDate, details, expenseId, walletId, bulletId);
     }
 
     public String getId() {
         return id;
     }
 
-    public BigDecimal getAmount() {
+    public Money getAmount() {
         return amount;
     }
 

@@ -28,7 +28,7 @@ public final class Bullet {
     }
 
     public Bullet pay(Payment payment) {
-        return this.debit(Money.of(payment.getAmount()));
+        return this.debit(payment.getAmount());
     }
 
     public static Bullet create(String description, Money budget, Money remaining, String walletId) {

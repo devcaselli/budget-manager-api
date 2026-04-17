@@ -98,7 +98,7 @@ public final class Expense {
         List<String> updatedIds = new ArrayList<>(this.paymentIds);
         updatedIds.add(payment.getId());
         return new Expense(this.id, this.walletId, this.name, this.cost, this.remaining, this.purchaseDate, updatedIds)
-                .debit(Money.of(payment.getAmount()));
+                .debit(payment.getAmount());
     }
 
     public String getId() {

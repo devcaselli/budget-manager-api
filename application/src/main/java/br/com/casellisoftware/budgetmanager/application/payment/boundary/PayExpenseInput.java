@@ -1,6 +1,7 @@
 package br.com.casellisoftware.budgetmanager.application.payment.boundary;
 
-import java.math.BigDecimal;
+import br.com.casellisoftware.budgetmanager.domain.shared.Money;
+
 import java.time.Instant;
 
 /**
@@ -8,11 +9,12 @@ import java.time.Instant;
  *
  * <p>Carries everything needed to register a payment against an expense
  * and decrement its matching bullet. The REST layer is responsible for
- * validating each field — this record is a pure transport contract
- * between the HTTP adapter and the application layer.</p>
+ * validating each field and composing the {@link Money} value object from
+ * the raw {@code amount} + {@code currency} HTTP parameters — this record
+ * is a pure transport contract between the HTTP adapter and the application layer.</p>
  */
 public record PayExpenseInput(
-        BigDecimal amount,
+        Money amount,
         Instant paymentDate,
         String details,
         String expenseId,
