@@ -72,6 +72,7 @@ public final class Expense {
                                  String name,
                                  Money cost,
                                  LocalDate purchaseDate) {
+        validateName(name);
         if (!cost.isPositive()) {
             throw new IllegalArgumentException("cost must be positive");
         }
@@ -79,6 +80,16 @@ public final class Expense {
             throw new IllegalArgumentException("purchaseDate must not be in the future");
         }
         return new Expense(UUID.randomUUID().toString(), walletId, name, cost, cost, purchaseDate);
+    }
+
+    private static void validateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
+        if (name.length() > MAX_NAME_LENGTH) {
+            throw new IllegalArgumentException(
+                    "name must not exceed " + MAX_NAME_LENGTH + " characters");
+        }
     }
 
     /**
@@ -99,6 +110,35 @@ public final class Expense {
         updatedIds.add(payment.getId());
         return new Expense(this.id, this.walletId, this.name, this.cost, this.remaining, this.purchaseDate, updatedIds)
                 .debit(payment.getAmount());
+    }
+
+    /**
+     * Applies an explicit partial update. Financial state derived from payments
+     * ({@code remaining} and {@code paymentIds}) is intentionally not patchable.
+     */
+    public Expense patch(ExpensePatch patch) {
+        Objects.requireNonNull(patch, "patch must not be null");
+        if (patch.isEmpty()) {
+            return this;
+        }
+
+        patch.name().ifPresent(Expense::validateName);
+
+        String patchedName = patch.name().orElse(this.name);
+        Money patchedCost = patch.cost().orElse(this.cost);
+        LocalDate patchedPurchaseDate = patch.purchaseDate().orElse(this.purchaseDate);
+
+        if (Objects.equals(this.name, patchedName)
+                && Objects.equals(this.cost, patchedCost)
+                && Objects.equals(this.purchaseDate, patchedPurchaseDate)) {
+            return this;
+        }
+
+        return copyWith(patchedName, patchedCost, patchedPurchaseDate);
+    }
+
+    private Expense copyWith(String name, Money cost, LocalDate purchaseDate) {
+        return new Expense(this.id, this.walletId, name, cost, this.remaining, purchaseDate, this.paymentIds);
     }
 
     public String getId() {

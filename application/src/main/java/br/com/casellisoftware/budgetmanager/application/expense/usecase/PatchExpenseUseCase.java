@@ -4,8 +4,9 @@ import br.com.casellisoftware.budgetmanager.application.expense.boundary.Expense
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutputAssembler;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.PatchExpenseBoundary;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.PatchExpenseInput;
-import br.com.casellisoftware.budgetmanager.application.shared.PatchHelper;
+import br.com.casellisoftware.budgetmanager.application.expense.boundary.PatchExpenseInputAssembler;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
+import br.com.casellisoftware.budgetmanager.domain.expense.ExpensePatch;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 import org.slf4j.Logger;
@@ -28,7 +29,9 @@ public class PatchExpenseUseCase implements PatchExpenseBoundary {
         Expense existing = expenseRepository.findById(input.id())
                 .orElseThrow(() -> new ExpenseNotFoundException(input.id()));
 
-        Expense patched = PatchHelper.applyPatch(existing, input);
+        ExpensePatch patch = PatchExpenseInputAssembler.toPatch(input);
+        log.debug("Applying expense patch id={}, fields={}", input.id(), patch.appliedFieldNames());
+        Expense patched = existing.patch(patch);
 
         Expense saved = expenseRepository.save(patched);
         log.info("Expense patched successfully, id={}", saved.getId());
