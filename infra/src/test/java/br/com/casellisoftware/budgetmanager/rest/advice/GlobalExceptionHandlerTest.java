@@ -1,12 +1,17 @@
 package br.com.casellisoftware.budgetmanager.rest.advice;
 
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseNotFoundException;
+import br.com.casellisoftware.budgetmanager.domain.payment.AmountExceedsRemainingException;
+import br.com.casellisoftware.budgetmanager.domain.payment.CurrencyMismatchException;
+import br.com.casellisoftware.budgetmanager.domain.payment.WalletMismatchException;
 import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import tools.jackson.databind.ObjectMapper;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.MediaType;
@@ -138,6 +143,22 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "/dummy/domain-rule/wallet-mismatch, wallet mismatch",
+            "/dummy/domain-rule/currency-mismatch, currency mismatch",
+            "/dummy/domain-rule/amount-exceeds-remaining, amount exceeds remaining"
+    })
+    void domainRuleViolation_returns422_withCorrelationId(String path, String detail) throws Exception {
+        mockMvc.perform(post(path))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(422))
+                .andExpect(jsonPath("$.title").value("Domain rule violation"))
+                .andExpect(jsonPath("$.detail").value(detail))
+                .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)));
+    }
+
     @Test
     void illegalArgument_isNotSpeciallyMappedTo400() throws Exception {
         // The old handler turned any IllegalArgumentException into 400. New rule:
@@ -182,6 +203,21 @@ class GlobalExceptionHandlerTest {
         @PostMapping("/optimistic-lock")
         public String optimisticLock() {
             throw new OptimisticLockingFailureException("conflict");
+        }
+
+        @PostMapping("/domain-rule/wallet-mismatch")
+        public String walletMismatch() {
+            throw new WalletMismatchException("wallet mismatch");
+        }
+
+        @PostMapping("/domain-rule/currency-mismatch")
+        public String currencyMismatch() {
+            throw new CurrencyMismatchException("currency mismatch");
+        }
+
+        @PostMapping("/domain-rule/amount-exceeds-remaining")
+        public String amountExceedsRemaining() {
+            throw new AmountExceedsRemainingException("amount exceeds remaining");
         }
     }
 

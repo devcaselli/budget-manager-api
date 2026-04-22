@@ -2,6 +2,9 @@ package br.com.casellisoftware.budgetmanager.rest.advice;
 
 import br.com.casellisoftware.budgetmanager.domain.bullet.BulletNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseNotFoundException;
+import br.com.casellisoftware.budgetmanager.domain.payment.AmountExceedsRemainingException;
+import br.com.casellisoftware.budgetmanager.domain.payment.CurrencyMismatchException;
+import br.com.casellisoftware.budgetmanager.domain.payment.WalletMismatchException;
 import br.com.casellisoftware.budgetmanager.domain.wallet.exception.WalletNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -138,6 +141,21 @@ public class GlobalExceptionHandler {
         // WARN-level message only (no stack trace): 409 is an expected-retry signal, not an error. Stack noise would hide real incidents under retry storms.
         log.warn("Optimistic lock conflict on {}: {}", req.getRequestURI(), ex.getMessage());
         return problemResponse(HttpStatus.CONFLICT, pd);
+    }
+
+    @ExceptionHandler({
+            AmountExceedsRemainingException.class,
+            CurrencyMismatchException.class,
+            WalletMismatchException.class
+    })
+    public ResponseEntity<ProblemDetail> handleDomainRuleViolation(RuntimeException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                ex.getMessage()
+        );
+        problem.setTitle("Domain rule violation");
+        problem.setProperty(CORRELATION_ID, newCorrelationId());
+        return problemResponse(HttpStatus.UNPROCESSABLE_ENTITY, problem);
     }
 
     @ExceptionHandler(DataAccessException.class)

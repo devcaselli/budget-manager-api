@@ -6,6 +6,13 @@ import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Domain entity representing a budget bullet.
+ *
+ * <p>Immutable: every state-changing operation returns a new instance.
+ * New bullets should be obtained via {@link #create}; reconstruction from
+ * persistence uses {@link #rebuild}.</p>
+ */
 public final class Bullet {
 
     private final String id;
@@ -61,9 +68,7 @@ public final class Bullet {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Bullet bullet = (Bullet) o;
-        return Objects.equals(id, bullet.id);
+        return o instanceof Bullet bullet && Objects.equals(id, bullet.id);
     }
 
     @Override

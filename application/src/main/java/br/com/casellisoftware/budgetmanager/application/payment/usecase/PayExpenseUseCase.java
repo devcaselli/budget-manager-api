@@ -12,6 +12,7 @@ import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseNotFoundExcept
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 import br.com.casellisoftware.budgetmanager.domain.payment.Payment;
 import br.com.casellisoftware.budgetmanager.domain.payment.PaymentRepository;
+import br.com.casellisoftware.budgetmanager.domain.payment.policy.PaymentPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +49,8 @@ public class PayExpenseUseCase implements PayExpenseBoundary {
                 .orElseThrow(() -> new ExpenseNotFoundException(input.expenseId()));
         Bullet bullet = bulletRepository.findById(input.bulletId())
                 .orElseThrow(() -> new BulletNotFoundException("Bullet not found: " + input.bulletId()));
+
+        PaymentPolicy.validate(expense, bullet, input.amount(), input.walletId());
 
         Payment savedPayment = paymentRepository.save(Payment.create(
                 input.amount(),
