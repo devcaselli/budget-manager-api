@@ -26,11 +26,17 @@ public interface BulletPersistenceMapper {
 
     Logger log = LoggerFactory.getLogger(BulletPersistenceMapper.class);
 
-    @Mapping(target = "budget", source = "budget.amount")
-    @Mapping(target = "remaining", source = "remaining.amount")
+    @Mapping(target = "budget", source = "bullet.budget.amount")
+    @Mapping(target = "remaining", source = "bullet.remaining.amount")
     @Mapping(target = "currency", expression = "java(bullet.getBudget().currency().getCurrencyCode())")
     @Mapping(target = "version", ignore = true)
     BulletDocument toDocument(Bullet bullet);
+
+    @Mapping(target = "budget", source = "bullet.budget.amount")
+    @Mapping(target = "remaining", source = "bullet.remaining.amount")
+    @Mapping(target = "currency", expression = "java(bullet.getBudget().currency().getCurrencyCode())")
+    @Mapping(target = "version", source = "version")
+    BulletDocument toDocument(Bullet bullet, Long version);
 
     default Bullet toDomain(BulletDocument document) {
         Currency currency;

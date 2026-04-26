@@ -1,0 +1,316 @@
+{
+  "info": {
+    "_postman_id": "4cb7f4d1-5a0f-4b4c-8d28-4f31e2ac6f73",
+    "name": "Budget Manager API",
+    "description": "Postman collection for the controllers exposed in infra.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "walletId",
+      "value": ""
+    },
+    {
+      "key": "bulletId",
+      "value": ""
+    },
+    {
+      "key": "expenseId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Wallet",
+      "item": [
+        {
+          "name": "Create Wallet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Sample wallet\",\n  \"budget\": 5000.0,\n  \"startDate\": \"2026-04-25\",\n  \"closedDate\": null,\n  \"closed\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "wallets"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var id = pm.response.json().id;",
+                  "pm.collectionVariables.set('walletId', id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bullet",
+      "item": [
+        {
+          "name": "Create Bullet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Sample bullet\",\n  \"budget\": 1500.0,\n  \"walletId\": \"{{walletId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bullets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bullets"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var id = pm.response.json().id;",
+                  "pm.collectionVariables.set('bulletId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Bullet By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bullets/{{bulletId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bullets",
+                "{{bulletId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expense",
+      "item": [
+        {
+          "name": "Create Expense",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Groceries\",\n  \"cost\": 59.9,\n  \"purchaseDate\": \"2026-04-25\",\n  \"walletId\": \"{{walletId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/expenses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenses"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var id = pm.response.json().id;",
+                  "pm.collectionVariables.set('expenseId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Expenses By Wallet",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/expenses/wallet/{{walletId}}?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenses",
+                "wallet",
+                "{{walletId}}"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Expense",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/expenses/{{expenseId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenses",
+                "{{expenseId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 204', function () {",
+                  "  pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Payment",
+      "item": [
+        {
+          "name": "Pay",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment\": {\n    \"amount\": 20.0,\n    \"currency\": \"BRL\",\n    \"paymentDate\": \"2026-04-25T12:00:00Z\",\n    \"details\": \"Sample payment\"\n  },\n  \"bulletId\": \"{{bulletId}}\",\n  \"expenseId\": \"{{expenseId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pay?walletId={{walletId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pay"
+              ],
+              "query": [
+                {
+                  "key": "walletId",
+                  "value": "{{walletId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

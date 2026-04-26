@@ -27,11 +27,17 @@ public interface ExpensePersistenceMapper {
 
     Logger log = LoggerFactory.getLogger(ExpensePersistenceMapper.class);
 
-    @Mapping(target = "cost", source = "cost.amount")
-    @Mapping(target = "remaining", source = "remaining.amount")
+    @Mapping(target = "cost", source = "expense.cost.amount")
+    @Mapping(target = "remaining", source = "expense.remaining.amount")
     @Mapping(target = "currency", expression = "java(expense.getCost().currency().getCurrencyCode())")
     @Mapping(target = "version", ignore = true)
     ExpenseDocument toDocument(Expense expense);
+
+    @Mapping(target = "cost", source = "expense.cost.amount")
+    @Mapping(target = "remaining", source = "expense.remaining.amount")
+    @Mapping(target = "currency", expression = "java(expense.getCost().currency().getCurrencyCode())")
+    @Mapping(target = "version", source = "version")
+    ExpenseDocument toDocument(Expense expense, Long version);
 
     default Expense toDomain(ExpenseDocument document) {
         Currency currency;

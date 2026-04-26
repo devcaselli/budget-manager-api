@@ -26,7 +26,10 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
 
     @Override
     public Expense save(Expense expense) {
-        ExpenseDocument saved = this.expenseMongoRepository.save(mapper.toDocument(expense));
+        Long version = expenseMongoRepository.findById(expense.getId())
+                .map(ExpenseDocument::getVersion)
+                .orElse(null);
+        ExpenseDocument saved = expenseMongoRepository.save(mapper.toDocument(expense, version));
         return mapper.toDomain(saved);
     }
 

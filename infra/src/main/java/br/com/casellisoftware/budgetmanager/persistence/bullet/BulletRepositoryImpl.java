@@ -23,7 +23,10 @@ public class BulletRepositoryImpl implements BulletRepository {
 
     @Override
     public Bullet save(Bullet bullet) {
-        BulletDocument saved = bulletMongoRepository.save(mapper.toDocument(bullet));
+        Long version = bulletMongoRepository.findById(bullet.getId())
+                .map(BulletDocument::getVersion)
+                .orElse(null);
+        BulletDocument saved = bulletMongoRepository.save(mapper.toDocument(bullet, version));
         return mapper.toDomain(saved);
     }
 

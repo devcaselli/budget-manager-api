@@ -73,7 +73,8 @@ public class DeleteExpenseByIdUseCase implements DeleteExpenseByIdBoundary {
                 bullet.id(),
                 bullet.description(),
                 bullet.budget(),
-                bullet.remaining().add(refund)
+                bullet.remaining().add(refund),
+                bullet.walletId()
         );
     }
 }

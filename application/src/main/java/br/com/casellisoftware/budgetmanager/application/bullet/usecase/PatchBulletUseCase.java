@@ -4,8 +4,9 @@ import br.com.casellisoftware.budgetmanager.application.bullet.boundary.BulletOu
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.BulletOutputAssembler;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.PatchBulletBoundary;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.PatchBulletInput;
-import br.com.casellisoftware.budgetmanager.application.shared.PatchHelper;
+import br.com.casellisoftware.budgetmanager.application.bullet.boundary.PatchBulletInputAssembler;
 import br.com.casellisoftware.budgetmanager.domain.bullet.Bullet;
+import br.com.casellisoftware.budgetmanager.domain.bullet.BulletPatch;
 import br.com.casellisoftware.budgetmanager.domain.bullet.BulletNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.bullet.BulletRepository;
 import org.slf4j.Logger;
@@ -28,7 +29,11 @@ public class PatchBulletUseCase implements PatchBulletBoundary {
         Bullet existing = bulletRepository.findById(input.id())
                 .orElseThrow(() -> new BulletNotFoundException(input.id()));
 
-        Bullet patched = PatchHelper.applyPatch(existing, input);
+        BulletPatch patch = PatchBulletInputAssembler.toPatch(input);
+        if (log.isDebugEnabled()) {
+            log.debug("Applying bullet patch id={}, fields={}", input.id(), patch.appliedFieldNames());
+        }
+        Bullet patched = existing.patch(patch);
 
         Bullet saved = bulletRepository.save(patched);
         log.info("Bullet patched successfully, id={}", saved.getId());

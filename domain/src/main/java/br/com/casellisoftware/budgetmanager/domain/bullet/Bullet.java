@@ -38,6 +38,52 @@ public final class Bullet {
         return this.debit(payment.getAmount());
     }
 
+    public Bullet patch(BulletPatch patch) {
+        Objects.requireNonNull(patch, "patch must not be null");
+        if (patch.isEmpty()) {
+            return this;
+        }
+
+        String patchedDescription = patch.description().orElse(this.description);
+        Money patchedBudget = patch.budget().orElse(this.budget);
+        Money patchedRemaining = patch.remaining().orElse(this.remaining);
+        String patchedWalletId = patch.walletId().orElse(this.walletId);
+
+        validatePatchedState(patchedDescription, patchedBudget, patchedRemaining, patchedWalletId);
+
+        if (Objects.equals(this.description, patchedDescription)
+                && Objects.equals(this.budget, patchedBudget)
+                && Objects.equals(this.remaining, patchedRemaining)
+                && Objects.equals(this.walletId, patchedWalletId)) {
+            return this;
+        }
+
+        return new Bullet(this.id, patchedDescription, patchedBudget, patchedRemaining, patchedWalletId);
+    }
+
+    private void validatePatchedState(String description, Money budget, Money remaining, String walletId) {
+        if (description == null) {
+            throw new IllegalArgumentException("description must not be null");
+        }
+        if (description.isBlank()) {
+            throw new IllegalArgumentException("description must not be blank");
+        }
+        Objects.requireNonNull(budget, "budget must not be null");
+        Objects.requireNonNull(remaining, "remaining must not be null");
+        if (walletId == null) {
+            throw new IllegalArgumentException("walletId must not be null");
+        }
+        if (walletId.isBlank()) {
+            throw new IllegalArgumentException("walletId must not be blank");
+        }
+        if (!Objects.equals(this.walletId, walletId)) {
+            throw new IllegalArgumentException("walletId is immutable");
+        }
+        if (remaining.isGreaterThan(budget)) {
+            throw new IllegalArgumentException("remaining must not exceed budget");
+        }
+    }
+
     public static Bullet create(String description, Money budget, Money remaining, String walletId) {
         return new Bullet(UUID.randomUUID().toString(), description, budget, remaining, walletId);
     }

@@ -1,0 +1,5 @@
+files:
+  development:
+    tasks:   $HOME/Projects/personal/development/budget-manager-api/epics
+    reviews: $HOME/Projects/personal/development/budget-manager-api/reviews
+    handoff: $HOME/Projects/personal/development/budget-manager-api/handoff
