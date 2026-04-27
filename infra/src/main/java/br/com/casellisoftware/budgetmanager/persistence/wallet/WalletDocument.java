@@ -1,6 +1,5 @@
 package br.com.casellisoftware.budgetmanager.persistence.wallet;
 
-import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @AllArgsConstructor
@@ -24,8 +24,10 @@ public class WalletDocument {
     private Long version;
 
     private String description;
-    private Money budget;
-    private Money remaining;
+    private BigDecimal budgetAmount;
+    private String budgetCurrency;
+    private BigDecimal remainingAmount;
+    private String remainingCurrency;
     private LocalDate startDate;
     private LocalDate closedDate;
     private Boolean isClosed;

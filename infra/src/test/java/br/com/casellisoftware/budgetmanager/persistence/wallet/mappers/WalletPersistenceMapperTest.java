@@ -6,6 +6,7 @@ import br.com.casellisoftware.budgetmanager.persistence.wallet.WalletDocument;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,8 +31,10 @@ class WalletPersistenceMapperTest {
 
         assertThat(document.getId()).isEqualTo("id-1");
         assertThat(document.getDescription()).isEqualTo("Main wallet");
-        assertThat(document.getBudget().amount()).isEqualByComparingTo("3000.00");
-        assertThat(document.getRemaining().amount()).isEqualByComparingTo("2500.00");
+        assertThat(document.getBudgetAmount()).isEqualByComparingTo("3000.00");
+        assertThat(document.getBudgetCurrency()).isEqualTo("BRL");
+        assertThat(document.getRemainingAmount()).isEqualByComparingTo("2500.00");
+        assertThat(document.getRemainingCurrency()).isEqualTo("BRL");
         assertThat(document.getStartDate()).isEqualTo(LocalDate.of(2026, 1, 1));
         assertThat(document.getClosedDate()).isNull();
         assertThat(document.getIsClosed()).isFalse();
@@ -45,8 +48,10 @@ class WalletPersistenceMapperTest {
                 "id-2",
                 42L, // version present on the document — MUST NOT leak into domain
                 "Side wallet",
-                Money.of("100.00"),
-                Money.of("80.00"),
+                new BigDecimal("100.00"),
+                "BRL",
+                new BigDecimal("80.00"),
+                "BRL",
                 LocalDate.of(2026, 2, 1),
                 LocalDate.of(2026, 12, 31),
                 true

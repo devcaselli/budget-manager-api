@@ -1,17 +1,21 @@
 package br.com.casellisoftware.budgetmanager.persistence.wallet.mappers;
 
+import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.domain.wallet.Wallet;
 import br.com.casellisoftware.budgetmanager.persistence.wallet.WalletDocument;
-import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+import java.util.Currency;
+
 /**
  * MapStruct mapper between {@link Wallet} and {@link WalletDocument}.
  *
- * <p>Both models use {@code Money} directly, so no custom conversion is needed —
- * MapStruct generates the entire mapping.</p>
+ * <p>{@code toDocument} flattens {@link Money} into amount + currency fields,
+ * matching the Mongo shape used by expenses and bullets. {@code toDomain} is a
+ * default method because reconstructing {@link Money} from separate fields
+ * requires building {@link Currency} instances.</p>
  */
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.ERROR,
@@ -19,12 +23,35 @@ import org.mapstruct.ReportingPolicy;
 public interface WalletPersistenceMapper {
 
     @Mapping(source = "closed", target = "isClosed")
+    @Mapping(source = "budget.amount", target = "budgetAmount")
+    @Mapping(target = "budgetCurrency", expression = "java(wallet.getBudget().currency().getCurrencyCode())")
+    @Mapping(source = "remaining.amount", target = "remainingAmount")
+    @Mapping(target = "remainingCurrency", expression = "java(wallet.getRemaining().currency().getCurrencyCode())")
     @Mapping(target = "version", ignore = true)
     WalletDocument toDocument(Wallet wallet);
 
-    @BeanMapping(ignoreUnmappedSourceProperties = {"version"})
-    @Mapping(source = "isClosed", target = "closed")
-    @Mapping(target = "debit", ignore = true)
-    @Mapping(target = "patch", ignore = true)
-    Wallet toDomain(WalletDocument document);
+    default Wallet toDomain(WalletDocument document) {
+        if (document == null) {
+            return null;
+        }
+
+        Money budget = Money.of(
+                document.getBudgetAmount(),
+                Currency.getInstance(document.getBudgetCurrency())
+        );
+        Money remaining = Money.of(
+                document.getRemainingAmount(),
+                Currency.getInstance(document.getRemainingCurrency())
+        );
+
+        return new Wallet(
+                document.getId(),
+                document.getDescription(),
+                budget,
+                remaining,
+                document.getStartDate(),
+                document.getClosedDate(),
+                document.getIsClosed()
+        );
+    }
 }
