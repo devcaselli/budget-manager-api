@@ -25,5 +25,6 @@ public interface WalletPersistenceMapper {
     @BeanMapping(ignoreUnmappedSourceProperties = {"version"})
     @Mapping(source = "isClosed", target = "closed")
     @Mapping(target = "debit", ignore = true)
+    @Mapping(target = "patch", ignore = true)
     Wallet toDomain(WalletDocument document);
 }

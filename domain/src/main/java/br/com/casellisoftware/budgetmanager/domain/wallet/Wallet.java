@@ -59,6 +59,40 @@ public final class Wallet {
         return new Wallet(this.id, this.description, this.budget, newRemaining, this.startDate, this.closedDate, this.closed);
     }
 
+    /**
+     * Applies an explicit partial update. Financial state derived from debits
+     * ({@code remaining}) and lifecycle identity ({@code startDate}) are not patchable.
+     */
+    public Wallet patch(WalletPatch patch) {
+        Objects.requireNonNull(patch, "patch must not be null");
+        if (patch.isEmpty()) {
+            return this;
+        }
+
+        String patchedDescription = patch.description().orElse(this.description);
+        Money patchedBudget = patch.budget().orElse(this.budget);
+        LocalDate patchedClosedDate = patch.closedDate().orElse(this.closedDate);
+        Boolean patchedClosed = patch.closed().orElse(this.closed);
+
+        validatePatchedState(patchedBudget);
+
+        if (Objects.equals(this.description, patchedDescription)
+                && Objects.equals(this.budget, patchedBudget)
+                && Objects.equals(this.closedDate, patchedClosedDate)
+                && Objects.equals(this.closed, patchedClosed)) {
+            return this;
+        }
+
+        return new Wallet(this.id, patchedDescription, patchedBudget, this.remaining, this.startDate, patchedClosedDate, patchedClosed);
+    }
+
+    private void validatePatchedState(Money budget) {
+        Objects.requireNonNull(budget, "budget must not be null");
+        if (this.remaining != null && this.remaining.isGreaterThan(budget)) {
+            throw new IllegalArgumentException("remaining must not exceed budget");
+        }
+    }
+
     public String getId() {
         return id;
     }

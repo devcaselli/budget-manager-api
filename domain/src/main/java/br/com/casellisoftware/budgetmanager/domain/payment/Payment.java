@@ -34,6 +34,23 @@ public final class Payment {
         return new Payment(id, amount, paymentDate, details, expenseId, walletId, bulletId);
     }
 
+    public Payment patch(PaymentPatch patch) {
+        Objects.requireNonNull(patch, "patch must not be null");
+        if (patch.isEmpty()) {
+            return this;
+        }
+
+        Money patchedAmount = patch.amount().orElse(this.amount);
+        String patchedDetails = patch.details().orElse(this.details);
+
+        if (Objects.equals(this.amount, patchedAmount)
+                && Objects.equals(this.details, patchedDetails)) {
+            return this;
+        }
+
+        return new Payment(this.id, patchedAmount, this.paymentDate, patchedDetails, this.expenseId, this.walletId, this.bulletId);
+    }
+
     public String getId() {
         return id;
     }
