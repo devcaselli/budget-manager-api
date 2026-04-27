@@ -39,6 +39,11 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
     }
 
     @Override
+    public boolean existsById(String id) {
+        return this.expenseMongoRepository.existsById(id);
+    }
+
+    @Override
     public PageResult<Expense> findByWalletId(String walletId, int page, int size) {
         Page<ExpenseDocument> documentPage = this.expenseMongoRepository
                 .findByWalletId(walletId, PageRequest.of(page, size));

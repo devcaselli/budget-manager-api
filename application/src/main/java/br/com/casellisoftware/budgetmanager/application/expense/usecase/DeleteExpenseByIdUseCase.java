@@ -5,11 +5,10 @@ import br.com.casellisoftware.budgetmanager.application.bullet.boundary.FindAllB
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.PatchBulletBoundary;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.PatchBulletInput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.DeleteExpenseByIdBoundary;
-import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
-import br.com.casellisoftware.budgetmanager.application.expense.boundary.FindExpenseByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.payment.boundary.DeleteAllPaymentByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.payment.boundary.FindAllPaymentByExpenseIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.payment.boundary.PaymentOutput;
+import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 
 import java.math.BigDecimal;
@@ -20,20 +19,17 @@ import java.util.stream.Collectors;
 public class DeleteExpenseByIdUseCase implements DeleteExpenseByIdBoundary {
 
     private final ExpenseRepository expenseRepository;
-    private final FindExpenseByIdBoundary findExpenseByIdBoundary;
     private final FindAllPaymentByExpenseIdBoundary findAllPaymentByExpenseIdBoundary;
     private final FindAllBulletsByIdsBoundary findAllBulletsByIdsBoundary;
     private final PatchBulletBoundary patchBulletBoundary;
     private final DeleteAllPaymentByIdBoundary deleteAllPaymentByIdBoundary;
 
     public DeleteExpenseByIdUseCase(ExpenseRepository expenseRepository,
-                                    FindExpenseByIdBoundary findExpenseByIdBoundary,
                                     FindAllPaymentByExpenseIdBoundary findAllPaymentByExpenseIdBoundary,
                                     FindAllBulletsByIdsBoundary findAllBulletsByIdsBoundary,
                                     PatchBulletBoundary patchBulletBoundary,
                                     DeleteAllPaymentByIdBoundary deleteAllPaymentByIdBoundary) {
         this.expenseRepository = expenseRepository;
-        this.findExpenseByIdBoundary = findExpenseByIdBoundary;
         this.findAllPaymentByExpenseIdBoundary = findAllPaymentByExpenseIdBoundary;
         this.findAllBulletsByIdsBoundary = findAllBulletsByIdsBoundary;
         this.patchBulletBoundary = patchBulletBoundary;
@@ -41,9 +37,12 @@ public class DeleteExpenseByIdUseCase implements DeleteExpenseByIdBoundary {
     }
 
     public void execute(String id) {
-        ExpenseOutput expense = findExpenseByIdBoundary.execute(id);
-        rechargeableBullets(expense.id());
-        expenseRepository.deleteById(expense.id());
+        if (!expenseRepository.existsById(id)) {
+            throw new ExpenseNotFoundException(id);
+        }
+
+        rechargeableBullets(id);
+        expenseRepository.deleteById(id);
     }
 
     private void rechargeableBullets(String expenseId) {

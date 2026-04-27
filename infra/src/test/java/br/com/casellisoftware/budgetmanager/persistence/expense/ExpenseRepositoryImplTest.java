@@ -58,6 +58,14 @@ class ExpenseRepositoryImplTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
+    void existsById_returnsWhetherExpenseExists() {
+        Expense saved = repository.save(newExpense("coffee", "5.00", "wallet-1"));
+
+        assertThat(repository.existsById(saved.getId())).isTrue();
+        assertThat(repository.existsById("nonexistent-id")).isFalse();
+    }
+
+    @Test
     void findByWalletId_returnsPagedResults() {
         repository.save(newExpense("lunch", "10.50", "wallet-1"));
         repository.save(newExpense("coffee", "5.00", "wallet-1"));

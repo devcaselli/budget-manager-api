@@ -59,14 +59,12 @@ public class BusinessLayerBeanConfiguration {
     @Bean
     public DeleteExpenseByIdBoundary deleteExpenseByIdBoundary(
             ExpenseRepository expenseRepository,
-            FindExpenseByIdBoundary findExpenseByIdBoundary,
             FindAllPaymentByExpenseIdBoundary findAllPaymentByExpenseIdBoundary,
             FindAllBulletsByIdsBoundary findAllBulletsByIdsBoundary,
             PatchBulletBoundary patchBulletBoundary,
             DeleteAllPaymentByIdBoundary deleteAllPaymentByIdBoundary) {
         DeleteExpenseByIdUseCase useCase = new DeleteExpenseByIdUseCase(
                 expenseRepository,
-                findExpenseByIdBoundary,
                 findAllPaymentByExpenseIdBoundary,
                 findAllBulletsByIdsBoundary,
                 patchBulletBoundary,
