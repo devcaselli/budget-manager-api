@@ -115,8 +115,8 @@ public class BusinessLayerBeanConfiguration {
     }
 
     @Bean
-    public DeletePaymentByIdUseCase deletePaymentByIdUseCase(PaymentRepository paymentRepository, FindPaymentByIdUseCase findPaymentByIdUseCase) {
-        return new DeletePaymentByIdUseCase(paymentRepository, findPaymentByIdUseCase);
+    public DeletePaymentByIdUseCase deletePaymentByIdUseCase(PaymentRepository paymentRepository) {
+        return new DeletePaymentByIdUseCase(paymentRepository);
     }
 
     @Bean
