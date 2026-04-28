@@ -1,7 +1,10 @@
 package br.com.casellisoftware.budgetmanager.configs;
 
+import br.com.casellisoftware.budgetmanager.application.bullet.boundary.DeleteBulletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.FindAllBulletsByIdsBoundary;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.PatchBulletBoundary;
+import br.com.casellisoftware.budgetmanager.application.bullet.boundary.SaveBulletBoundary;
+import br.com.casellisoftware.budgetmanager.application.bullet.usecase.DeleteBulletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.FindAllBulletsByIdsUseCase;
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.FindBulletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.PatchBulletUseCase;
@@ -20,9 +23,14 @@ import br.com.casellisoftware.budgetmanager.application.payment.usecase.DeletePa
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.FindAllPaymentByExpenseIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.FindPaymentByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.payment.usecase.PayExpenseUseCase;
+import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalDeleteBulletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalDeleteExpenseBoundary;
+import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalPatchBulletBoundary;
 import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalPayExpenseBoundary;
+import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalSaveBulletBoundary;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletByIdBoundary;
+import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletDomainByIdBoundary;
+import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletDomainByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.SaveWalletUseCase;
 import br.com.casellisoftware.budgetmanager.domain.bullet.BulletRepository;
@@ -72,8 +80,14 @@ public class BusinessLayerBeanConfiguration {
     }
 
     @Bean
-    public SaveBulletUseCase saveBulletUseCase(BulletRepository repository, FindWalletByIdBoundary findWalletByIdBoundary) {
-        return new SaveBulletUseCase(repository, findWalletByIdBoundary);
+    public SaveBulletBoundary saveBulletBoundary(BulletRepository bulletRepository,
+                                                 WalletRepository walletRepository,
+                                                 FindWalletDomainByIdBoundary findWalletDomainByIdBoundary) {
+        SaveBulletUseCase useCase = new SaveBulletUseCase(
+                bulletRepository,
+                walletRepository,
+                findWalletDomainByIdBoundary);
+        return new TransactionalSaveBulletBoundary(useCase);
     }
 
     @Bean
@@ -82,8 +96,27 @@ public class BusinessLayerBeanConfiguration {
     }
 
     @Bean
-    public PatchBulletUseCase patchBulletUseCase(BulletRepository repository) {
-        return new PatchBulletUseCase(repository);
+    public PatchBulletBoundary patchBulletBoundary(BulletRepository bulletRepository,
+                                                   WalletRepository walletRepository,
+                                                   FindWalletDomainByIdBoundary findWalletDomainByIdBoundary) {
+        PatchBulletUseCase useCase = new PatchBulletUseCase(
+                bulletRepository,
+                walletRepository,
+                findWalletDomainByIdBoundary);
+        return new TransactionalPatchBulletBoundary(useCase);
+    }
+
+    @Bean
+    public DeleteBulletByIdBoundary deleteBulletByIdBoundary(BulletRepository bulletRepository,
+                                                             WalletRepository walletRepository,
+                                                             PaymentRepository paymentRepository,
+                                                             FindWalletDomainByIdBoundary findWalletDomainByIdBoundary) {
+        DeleteBulletByIdUseCase useCase = new DeleteBulletByIdUseCase(
+                bulletRepository,
+                walletRepository,
+                paymentRepository,
+                findWalletDomainByIdBoundary);
+        return new TransactionalDeleteBulletByIdBoundary(useCase);
     }
 
     @Bean
@@ -99,6 +132,11 @@ public class BusinessLayerBeanConfiguration {
     @Bean
     public FindWalletByIdBoundary findWalletByIdBoundary(WalletRepository walletRepository) {
         return new FindWalletByIdUseCase(walletRepository);
+    }
+
+    @Bean
+    public FindWalletDomainByIdBoundary findWalletDomainByIdBoundary(WalletRepository walletRepository) {
+        return new FindWalletDomainByIdUseCase(walletRepository);
     }
 
     @Bean

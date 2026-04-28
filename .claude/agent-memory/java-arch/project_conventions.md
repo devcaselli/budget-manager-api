@@ -20,7 +20,7 @@ Conventions that are non-obvious from a quick read and worth remembering before 
 
 **Persistence is MongoDB via Spring Data.** `*RepositoryImpl` in infra wraps a `*MongoRepository extends CrudRepository`. Domain port returns `Optional`; "not found" is never an exception at the repository layer.
 
-**No `@Transactional` anywhere in the codebase** — the project relies on MongoDB implicit session handling. Adding declarative transactions would be a departure; flag it before recommending.
+**`@Transactional` lives only in infra decorator beans.** The pattern (introduced after the 2026-04-14 raio-x) is: keep the use case in `application/` Spring-free, then wrap it in a `Transactional<UseCaseName>Boundary` decorator under `infra/configs/transactional/` that implements the same boundary and annotates `execute(...)` with `@Transactional`. The bean factory in `BusinessLayerBeanConfiguration` exposes the decorator (not the raw use case) under the boundary type. Existing examples: `TransactionalPayExpenseBoundary`, `TransactionalDeleteExpenseBoundary`. Use the same pattern for any new multi-aggregate orchestrator.
 
 **Why:** These conventions were established through multiple code-review rounds (commits "Fixing code review points 01–10"). Deviating from them signals tech debt in this repo, not a neutral choice.
 

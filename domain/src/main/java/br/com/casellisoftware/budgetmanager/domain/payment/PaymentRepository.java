@@ -33,4 +33,6 @@ public interface PaymentRepository {
     List<Payment> findAllByExpenseId(String expenseId);
 
     void deleteAllById(List<String> ids);
+
+    boolean existsByBulletId(String bulletId);
 }

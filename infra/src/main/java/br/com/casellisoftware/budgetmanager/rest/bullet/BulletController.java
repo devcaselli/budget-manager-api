@@ -1,15 +1,20 @@
 package br.com.casellisoftware.budgetmanager.rest.bullet;
 
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.BulletOutput;
+import br.com.casellisoftware.budgetmanager.application.bullet.boundary.DeleteBulletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.FindBulletByIdBoundary;
+import br.com.casellisoftware.budgetmanager.application.bullet.boundary.PatchBulletBoundary;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.SaveBulletBoundary;
+import br.com.casellisoftware.budgetmanager.rest.bullet.dtos.BulletPatchRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.bullet.dtos.BulletRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.bullet.dtos.BulletResponseDto;
 import br.com.casellisoftware.budgetmanager.rest.bullet.mappers.BulletRestMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,6 +36,8 @@ public class BulletController {
 
     private final SaveBulletBoundary saveBulletBoundary;
     private final FindBulletByIdBoundary findBulletByIdBoundary;
+    private final PatchBulletBoundary patchBulletBoundary;
+    private final DeleteBulletByIdBoundary deleteBulletByIdBoundary;
     private final BulletRestMapper mapper;
 
     @PostMapping
@@ -55,5 +62,22 @@ public class BulletController {
         BulletResponseDto response = mapper.bulletOutputToBulletResponseDto(output);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<BulletResponseDto> patch(@PathVariable String id,
+                                                   @Valid @RequestBody BulletPatchRequestDto request) {
+        BulletOutput output = patchBulletBoundary.execute(
+                mapper.bulletPatchRequestDtoToInput(id, request)
+        );
+        BulletResponseDto response = mapper.bulletOutputToBulletResponseDto(output);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        deleteBulletByIdBoundary.execute(id);
+        return ResponseEntity.noContent().build();
     }
 }

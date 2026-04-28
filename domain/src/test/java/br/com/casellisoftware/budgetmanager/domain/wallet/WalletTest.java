@@ -102,4 +102,39 @@ class WalletTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("remaining must not exceed budget");
     }
+
+    @Test
+    void credit_increasesRemainingAndKeepsOriginalImmutable() {
+        Wallet wallet = new Wallet(
+                "wallet-1",
+                "monthly",
+                Money.of("1000.00"),
+                Money.of("700.00"),
+                LocalDate.of(2026, 4, 1),
+                LocalDate.of(2026, 4, 30),
+                false
+        );
+
+        Wallet credited = wallet.credit(Money.of("100.00"));
+
+        assertThat(credited.getRemaining()).isEqualTo(Money.of("800.00"));
+        assertThat(wallet.getRemaining()).isEqualTo(Money.of("700.00"));
+    }
+
+    @Test
+    void credit_rejectsRemainingAboveBudget() {
+        Wallet wallet = new Wallet(
+                "wallet-1",
+                "monthly",
+                Money.of("1000.00"),
+                Money.of("950.00"),
+                LocalDate.of(2026, 4, 1),
+                LocalDate.of(2026, 4, 30),
+                false
+        );
+
+        assertThatThrownBy(() -> wallet.credit(Money.of("50.01")))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("remaining above budget");
+    }
 }

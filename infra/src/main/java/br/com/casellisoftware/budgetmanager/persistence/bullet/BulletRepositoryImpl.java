@@ -43,4 +43,9 @@ public class BulletRepositoryImpl implements BulletRepository {
                 .map(mapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public void deleteById(String id) {
+        this.bulletMongoRepository.deleteById(id);
+    }
 }

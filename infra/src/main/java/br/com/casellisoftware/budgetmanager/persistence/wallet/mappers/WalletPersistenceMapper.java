@@ -28,6 +28,14 @@ public interface WalletPersistenceMapper {
     @Mapping(target = "version", ignore = true)
     WalletDocument toDocument(Wallet wallet);
 
+    @Mapping(source = "wallet.closed", target = "isClosed")
+    @Mapping(source = "wallet.budget.amount", target = "budgetAmount")
+    @Mapping(target = "budgetCurrency", expression = "java(wallet.getBudget().currency().getCurrencyCode())")
+    @Mapping(source = "wallet.remaining.amount", target = "remainingAmount")
+    @Mapping(target = "remainingCurrency", expression = "java(wallet.getRemaining().currency().getCurrencyCode())")
+    @Mapping(target = "version", source = "version")
+    WalletDocument toDocument(Wallet wallet, Long version);
+
     default Wallet toDomain(WalletDocument document) {
         if (document == null) {
             return null;

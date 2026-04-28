@@ -10,4 +10,5 @@ public interface PaymentMongoRepository extends MongoRepository<PaymentDocument,
 
     Page<PaymentDocument> findByWalletId(String walletId, Pageable pageable);
     List<PaymentDocument> findAllByExpenseId(String expenseId);
+    boolean existsByBulletId(String bulletId);
 }

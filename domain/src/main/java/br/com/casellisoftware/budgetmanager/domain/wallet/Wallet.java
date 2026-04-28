@@ -60,6 +60,17 @@ public final class Wallet {
     }
 
     /**
+     * Returns a new {@code Wallet} with {@code remaining} increased by {@code amount}.
+     */
+    public Wallet credit(Money amount) {
+        Money newRemaining = this.remaining.add(amount);
+        if (newRemaining.isGreaterThan(this.budget)) {
+            throw new IllegalStateException("credit would push remaining above budget: id=" + this.id);
+        }
+        return new Wallet(this.id, this.description, this.budget, newRemaining, this.startDate, this.closedDate, this.closed);
+    }
+
+    /**
      * Applies an explicit partial update. Financial state derived from debits
      * ({@code remaining}) and lifecycle identity ({@code startDate}) are not patchable.
      */

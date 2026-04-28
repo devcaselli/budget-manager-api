@@ -23,7 +23,10 @@ public class WalletRepositoryImpl implements WalletRepository {
 
     @Override
     public Wallet save(Wallet wallet) {
-        WalletDocument document = mapper.toDocument(wallet);
+        Long version = walletMongoRepository.findById(wallet.getId())
+                .map(WalletDocument::getVersion)
+                .orElse(null);
+        WalletDocument document = mapper.toDocument(wallet, version);
         document = this.walletMongoRepository.save(document);
         return  mapper.toDomain(document);
     }

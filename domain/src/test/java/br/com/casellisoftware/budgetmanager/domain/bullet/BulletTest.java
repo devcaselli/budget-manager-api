@@ -238,4 +238,17 @@ class BulletTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("walletId must not be null");
     }
+
+    @Test
+    void consumed_returnsBudgetMinusRemaining() {
+        Bullet bullet = new Bullet(
+                "bullet-1",
+                "rent",
+                Money.of("500.00"),
+                Money.of("320.00"),
+                "wallet-1"
+        );
+
+        assertThat(bullet.consumed()).isEqualTo(Money.of("180.00"));
+    }
 }

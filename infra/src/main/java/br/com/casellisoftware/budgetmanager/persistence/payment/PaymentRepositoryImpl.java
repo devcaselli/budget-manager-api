@@ -69,4 +69,9 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     public void deleteAllById(List<String> ids) {
         this.paymentMongoRepository.deleteAllById(ids);
     }
+
+    @Override
+    public boolean existsByBulletId(String bulletId) {
+        return this.paymentMongoRepository.existsByBulletId(bulletId);
+    }
 }

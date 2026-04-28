@@ -2,10 +2,17 @@ package br.com.casellisoftware.budgetmanager.rest.bullet;
 
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.BulletInput;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.BulletOutput;
+import br.com.casellisoftware.budgetmanager.application.bullet.boundary.DeleteBulletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.FindBulletByIdBoundary;
+import br.com.casellisoftware.budgetmanager.application.bullet.boundary.PatchBulletBoundary;
+import br.com.casellisoftware.budgetmanager.application.bullet.boundary.PatchBulletInput;
+import br.com.casellisoftware.budgetmanager.domain.bullet.BulletInUseException;
 import br.com.casellisoftware.budgetmanager.application.bullet.boundary.SaveBulletBoundary;
 import br.com.casellisoftware.budgetmanager.domain.bullet.BulletNotFoundException;
+import br.com.casellisoftware.budgetmanager.domain.wallet.exception.WalletAllocationExceededException;
+import br.com.casellisoftware.budgetmanager.domain.wallet.exception.WalletCurrencyMismatchException;
 import br.com.casellisoftware.budgetmanager.rest.advice.GlobalExceptionHandler;
+import br.com.casellisoftware.budgetmanager.rest.bullet.dtos.BulletPatchRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.bullet.dtos.BulletRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.bullet.dtos.BulletResponseDto;
 import br.com.casellisoftware.budgetmanager.rest.bullet.mappers.BulletRestMapper;
@@ -32,6 +39,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -63,6 +72,12 @@ class BulletControllerTest {
 
     @MockitoBean
     private FindBulletByIdBoundary findBulletByIdBoundary;
+
+    @MockitoBean
+    private PatchBulletBoundary patchBulletBoundary;
+
+    @MockitoBean
+    private DeleteBulletByIdBoundary deleteBulletByIdBoundary;
 
     @MockitoBean
     private BulletRestMapper mapper;
@@ -200,6 +215,42 @@ class BulletControllerTest {
                 .andExpect(content().string(not(containsString("secret internal error"))));
     }
 
+    @Test
+    void save_whenBudgetExceedsWalletRemaining_returns409() throws Exception {
+        var request = new BulletRequestDto("Rent", new BigDecimal("1500.00"), "wallet-1");
+        var input = new BulletInput("Rent", new BigDecimal("1500.00"), "wallet-1");
+
+        when(mapper.bulletRequestDtoToBulletInput(any(BulletRequestDto.class))).thenReturn(input);
+        when(saveBulletBoundary.execute(input))
+                .thenThrow(new WalletAllocationExceededException("exceeds wallet remaining"));
+
+        mockMvc.perform(post(BULLETS_PATH)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+                .andExpect(jsonPath("$.title").value("Domain conflict"))
+                .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)));
+    }
+
+    @Test
+    void save_whenCurrencyDiffers_returns422() throws Exception {
+        var request = new BulletRequestDto("Rent", new BigDecimal("1500.00"), "wallet-1");
+        var input = new BulletInput("Rent", new BigDecimal("1500.00"), "wallet-1");
+
+        when(mapper.bulletRequestDtoToBulletInput(any(BulletRequestDto.class))).thenReturn(input);
+        when(saveBulletBoundary.execute(input))
+                .thenThrow(new WalletCurrencyMismatchException("Currency mismatch"));
+
+        mockMvc.perform(post(BULLETS_PATH)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+                .andExpect(jsonPath("$.title").value("Domain rule violation"))
+                .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)));
+    }
+
     // ---------- FindById: Happy path ----------
 
     @Test
@@ -249,5 +300,65 @@ class BulletControllerTest {
                 .andExpect(jsonPath("$.title").value("Internal server error"))
                 .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)))
                 .andExpect(content().string(not(containsString("secret internal error"))));
+    }
+
+    @Test
+    void patch_happyPath_returns200WithBody() throws Exception {
+        var request = new BulletPatchRequestDto("Groceries", new BigDecimal("650.00"), null, "wallet-1");
+        var input = new PatchBulletInput("bullet-42", "Groceries", new BigDecimal("650.00"), null, "wallet-1");
+        var output = new BulletOutput("bullet-42", "Groceries", new BigDecimal("650.00"),
+                new BigDecimal("650.00"), "wallet-1");
+        var responseDto = new BulletResponseDto("bullet-42", "Groceries", new BigDecimal("650.00"),
+                new BigDecimal("650.00"), "wallet-1");
+
+        when(mapper.bulletPatchRequestDtoToInput("bullet-42", request)).thenReturn(input);
+        when(patchBulletBoundary.execute(input)).thenReturn(output);
+        when(mapper.bulletOutputToBulletResponseDto(output)).thenReturn(responseDto);
+
+        mockMvc.perform(patch(BULLETS_PATH + "/bullet-42")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("bullet-42"))
+                .andExpect(jsonPath("$.description").value("Groceries"))
+                .andExpect(jsonPath("$.budget").value(650.00));
+    }
+
+    @Test
+    void patch_whenBudgetReductionCutsConsumedAmount_returns409() throws Exception {
+        var request = new BulletPatchRequestDto(null, new BigDecimal("100.00"), null, null);
+        var input = new PatchBulletInput("bullet-42", null, new BigDecimal("100.00"), null, null);
+
+        when(mapper.bulletPatchRequestDtoToInput("bullet-42", request)).thenReturn(input);
+        when(patchBulletBoundary.execute(input))
+                .thenThrow(new WalletAllocationExceededException("already consumed"));
+
+        mockMvc.perform(patch(BULLETS_PATH + "/bullet-42")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+                .andExpect(jsonPath("$.title").value("Domain conflict"))
+                .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)));
+    }
+
+    @Test
+    void delete_happyPath_returns204() throws Exception {
+        mockMvc.perform(delete(BULLETS_PATH + "/bullet-42"))
+                .andExpect(status().isNoContent());
+
+        verify(deleteBulletByIdBoundary).execute("bullet-42");
+    }
+
+    @Test
+    void delete_whenBulletHasPayments_returns409() throws Exception {
+        org.mockito.Mockito.doThrow(new BulletInUseException("bullet-42"))
+                .when(deleteBulletByIdBoundary).execute("bullet-42");
+
+        mockMvc.perform(delete(BULLETS_PATH + "/bullet-42"))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+                .andExpect(jsonPath("$.title").value("Domain conflict"))
+                .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)));
     }
 }

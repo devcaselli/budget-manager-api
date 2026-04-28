@@ -8,4 +8,5 @@ public interface BulletRepository {
     Bullet save(Bullet bullet);
     Optional<Bullet> findById(String id);
     List<Bullet> findAllByIds(List<String> ids);
+    void deleteById(String id);
 }

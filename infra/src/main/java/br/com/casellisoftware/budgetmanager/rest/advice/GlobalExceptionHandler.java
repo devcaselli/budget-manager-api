@@ -1,11 +1,14 @@
 package br.com.casellisoftware.budgetmanager.rest.advice;
 
+import br.com.casellisoftware.budgetmanager.domain.bullet.BulletInUseException;
 import br.com.casellisoftware.budgetmanager.domain.bullet.BulletNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.payment.AmountExceedsRemainingException;
 import br.com.casellisoftware.budgetmanager.domain.payment.CurrencyMismatchException;
 import br.com.casellisoftware.budgetmanager.domain.payment.PaymentNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.payment.WalletMismatchException;
+import br.com.casellisoftware.budgetmanager.domain.wallet.exception.WalletAllocationExceededException;
+import br.com.casellisoftware.budgetmanager.domain.wallet.exception.WalletCurrencyMismatchException;
 import br.com.casellisoftware.budgetmanager.domain.wallet.exception.WalletNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -158,6 +161,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             AmountExceedsRemainingException.class,
             CurrencyMismatchException.class,
+            WalletCurrencyMismatchException.class,
             WalletMismatchException.class
     })
     public ResponseEntity<ProblemDetail> handleDomainRuleViolation(RuntimeException ex) {
@@ -168,6 +172,20 @@ public class GlobalExceptionHandler {
         problem.setTitle("Domain rule violation");
         problem.setProperty(CORRELATION_ID, newCorrelationId());
         return problemResponse(HttpStatus.UNPROCESSABLE_ENTITY, problem);
+    }
+
+    @ExceptionHandler({
+            WalletAllocationExceededException.class,
+            BulletInUseException.class
+    })
+    public ResponseEntity<ProblemDetail> handleDomainConflict(RuntimeException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                ex.getMessage()
+        );
+        problem.setTitle("Domain conflict");
+        problem.setProperty(CORRELATION_ID, newCorrelationId());
+        return problemResponse(HttpStatus.CONFLICT, problem);
     }
 
     @ExceptionHandler(DataAccessException.class)

@@ -36,6 +36,10 @@ public final class Bullet {
         return new Bullet(this.id, this.description, this.budget, newRemaining, this.walletId);
     }
 
+    public Money consumed() {
+        return this.budget.subtract(this.remaining);
+    }
+
     public Bullet pay(Payment payment) {
         return pay(payment, new StandardDebitStrategy());
     }
