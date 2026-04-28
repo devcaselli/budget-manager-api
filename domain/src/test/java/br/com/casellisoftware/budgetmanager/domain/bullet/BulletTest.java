@@ -1,12 +1,66 @@
 package br.com.casellisoftware.budgetmanager.domain.bullet;
 
+import br.com.casellisoftware.budgetmanager.domain.payment.Payment;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class BulletTest {
+
+    @Test
+    void pay_usesStandardDebitStrategyByDefault() {
+        Bullet bullet = new Bullet(
+                "bullet-1",
+                "rent",
+                Money.of("500.00"),
+                Money.of("320.00"),
+                "wallet-1"
+        );
+        Payment payment = Payment.rebuild(
+                "payment-1",
+                Money.of("120.00"),
+                Instant.parse("2026-04-21T10:00:00Z"),
+                "rent payment",
+                "expense-1",
+                "wallet-1",
+                "bullet-1"
+        );
+
+        Bullet paid = bullet.pay(payment);
+
+        assertThat(paid.getRemaining()).isEqualTo(Money.of("200.00"));
+        assertThat(paid.getId()).isEqualTo("bullet-1");
+        assertThat(paid.getBudget()).isEqualTo(Money.of("500.00"));
+        assertThat(bullet.getRemaining()).isEqualTo(Money.of("320.00"));
+    }
+
+    @Test
+    void pay_acceptsCustomDebitStrategy() {
+        Bullet bullet = new Bullet(
+                "bullet-1",
+                "rent",
+                Money.of("500.00"),
+                Money.of("320.00"),
+                "wallet-1"
+        );
+        Payment payment = Payment.rebuild(
+                "payment-1",
+                Money.of("120.00"),
+                Instant.parse("2026-04-21T10:00:00Z"),
+                "rent payment",
+                "expense-1",
+                "wallet-1",
+                "bullet-1"
+        );
+
+        Bullet paid = bullet.pay(payment, (current, amount) -> Money.of("123.00"));
+
+        assertThat(paid.getRemaining()).isEqualTo(Money.of("123.00"));
+    }
 
     @Test
     void patch_onlyUpdatesNonNullFields() {

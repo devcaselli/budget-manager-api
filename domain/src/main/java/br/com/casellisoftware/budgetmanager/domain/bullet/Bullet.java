@@ -1,5 +1,7 @@
 package br.com.casellisoftware.budgetmanager.domain.bullet;
 
+import br.com.casellisoftware.budgetmanager.domain.bullet.debit.DebitStrategy;
+import br.com.casellisoftware.budgetmanager.domain.bullet.debit.StandardDebitStrategy;
 import br.com.casellisoftware.budgetmanager.domain.payment.Payment;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 
@@ -35,7 +37,13 @@ public final class Bullet {
     }
 
     public Bullet pay(Payment payment) {
-        return this.debit(payment.getAmount());
+        return pay(payment, new StandardDebitStrategy());
+    }
+
+    public Bullet pay(Payment payment, DebitStrategy strategy) {
+        Objects.requireNonNull(strategy, "strategy must not be null");
+        Money newRemaining = strategy.applyDebit(this, payment.getAmount());
+        return new Bullet(this.id, this.description, this.budget, newRemaining, this.walletId);
     }
 
     public Bullet patch(BulletPatch patch) {
