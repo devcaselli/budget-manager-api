@@ -10,8 +10,6 @@ import br.com.casellisoftware.budgetmanager.domain.wallet.WalletRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
-
 public class SaveWalletUseCase implements SaveWalletBoundary {
 
     private static final Logger log = LoggerFactory.getLogger(SaveWalletUseCase.class);
@@ -38,13 +36,8 @@ public class SaveWalletUseCase implements SaveWalletBoundary {
                 this.walletRepository.save(wallet)
         );
 
-        log.info("Wallet saved successfully, id={}", saved.id());
-        log.info("Wallet starts on {}", saved.startDate());
-
-        Optional.ofNullable(saved.closedDate())
-                .ifPresent(data -> {
-                    log.info("Wallet closes on {}", data);
-                });
+        log.info("Wallet saved id={} startDate={} closedDate={}",
+                saved.id(), saved.startDate(), saved.closedDate());
 
         return saved;
     }
