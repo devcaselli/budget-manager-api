@@ -226,7 +226,7 @@ class BulletControllerTest {
     @Test
     void findById_notFound_returns404() throws Exception {
         when(findBulletByIdBoundary.execute("nonexistent"))
-                .thenThrow(new BulletNotFoundException("Bullet not found, id: nonexistent"));
+                .thenThrow(new BulletNotFoundException("nonexistent"));
 
         mockMvc.perform(get(BULLETS_PATH + "/nonexistent"))
                 .andExpect(status().isNotFound())

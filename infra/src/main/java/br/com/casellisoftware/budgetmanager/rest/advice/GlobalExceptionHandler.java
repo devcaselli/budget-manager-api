@@ -4,6 +4,7 @@ import br.com.casellisoftware.budgetmanager.domain.bullet.BulletNotFoundExceptio
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.payment.AmountExceedsRemainingException;
 import br.com.casellisoftware.budgetmanager.domain.payment.CurrencyMismatchException;
+import br.com.casellisoftware.budgetmanager.domain.payment.PaymentNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.payment.WalletMismatchException;
 import br.com.casellisoftware.budgetmanager.domain.wallet.exception.WalletNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -128,6 +129,17 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
         problem.setTitle("Wallet not found");
+        problem.setProperty(CORRELATION_ID, newCorrelationId());
+        return problemResponse(HttpStatus.NOT_FOUND, problem);
+    }
+
+    @ExceptionHandler(PaymentNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handlePaymentNotFound(PaymentNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage()
+        );
+        problem.setTitle("Payment not found");
         problem.setProperty(CORRELATION_ID, newCorrelationId());
         return problemResponse(HttpStatus.NOT_FOUND, problem);
     }

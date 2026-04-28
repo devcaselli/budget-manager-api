@@ -3,6 +3,7 @@ package br.com.casellisoftware.budgetmanager.rest.advice;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.payment.AmountExceedsRemainingException;
 import br.com.casellisoftware.budgetmanager.domain.payment.CurrencyMismatchException;
+import br.com.casellisoftware.budgetmanager.domain.payment.PaymentNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.payment.WalletMismatchException;
 import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
@@ -104,6 +105,17 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void paymentNotFound_returns404_withMessageInDetail() throws Exception {
+        mockMvc.perform(post("/dummy/payment-not-found"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value("Payment not found"))
+                .andExpect(jsonPath("$.detail").value("Payment not found: payment-123"))
+                .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)));
+    }
+
+    @Test
     void dataAccess_returns503_withSanitizedBody() throws Exception {
         mockMvc.perform(post("/dummy/data-access"))
                 .andExpect(status().isServiceUnavailable())
@@ -183,6 +195,11 @@ class GlobalExceptionHandlerTest {
         @PostMapping("/not-found")
         public String notFound() {
             throw new ExpenseNotFoundException("abc-123");
+        }
+
+        @PostMapping("/payment-not-found")
+        public String paymentNotFound() {
+            throw new PaymentNotFoundException("payment-123");
         }
 
         @PostMapping("/data-access")

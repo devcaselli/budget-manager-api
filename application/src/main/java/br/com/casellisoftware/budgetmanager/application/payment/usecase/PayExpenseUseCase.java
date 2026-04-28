@@ -48,7 +48,7 @@ public class PayExpenseUseCase implements PayExpenseBoundary {
         Expense expense = expenseRepository.findById(input.expenseId())
                 .orElseThrow(() -> new ExpenseNotFoundException(input.expenseId()));
         Bullet bullet = bulletRepository.findById(input.bulletId())
-                .orElseThrow(() -> new BulletNotFoundException("Bullet not found: " + input.bulletId()));
+                .orElseThrow(() -> new BulletNotFoundException(input.bulletId()));
 
         PaymentPolicy.validate(expense, bullet, input.amount(), input.walletId());
 

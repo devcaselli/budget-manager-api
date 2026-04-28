@@ -7,8 +7,6 @@ import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 
-import java.util.Optional;
-
 public class FindExpenseByIdUseCase implements FindExpenseByIdBoundary {
 
     private final ExpenseRepository expenseRepository;
@@ -20,7 +18,7 @@ public class FindExpenseByIdUseCase implements FindExpenseByIdBoundary {
 
     public ExpenseOutput execute(String id){
         Expense expense = this.expenseRepository.findById(id)
-                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found, id: " + id));
+                .orElseThrow(() -> new ExpenseNotFoundException(id));
 
         return ExpenseOutputAssembler.from(expense);
     }

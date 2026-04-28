@@ -24,7 +24,7 @@ public class FindWalletByIdUseCase implements FindWalletByIdBoundary {
     public WalletOutput findById(String id) {
         log.info("Finding wallet by id {}", id);
         Wallet wallet = walletRepository.findById(id)
-                .orElseThrow(() -> new WalletNotFoundException("Wallet not found, id: " + id));
+                .orElseThrow(() -> new WalletNotFoundException(id));
 
         log.info("Wallet found {}", wallet);
         return WalletOutputAssembler.from(wallet);

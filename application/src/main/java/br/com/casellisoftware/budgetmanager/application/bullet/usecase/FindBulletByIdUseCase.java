@@ -24,7 +24,7 @@ public class FindBulletByIdUseCase implements FindBulletByIdBoundary {
         log.info("Finding bullet by id={}", id);
 
         Bullet bullet = bulletRepository.findById(id)
-                .orElseThrow(() -> new BulletNotFoundException("Bullet not found, id: " + id));
+                .orElseThrow(() -> new BulletNotFoundException(id));
 
         log.info("Bullet found, id={}", bullet.getId());
         return BulletOutputAssembler.from(bullet);

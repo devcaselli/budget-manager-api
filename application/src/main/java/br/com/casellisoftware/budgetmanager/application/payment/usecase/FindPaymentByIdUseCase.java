@@ -19,7 +19,7 @@ public class FindPaymentByIdUseCase implements FindPaymentByIdBoundary {
     @Override
     public PaymentOutput execute(String id) {
         Payment payment = this.paymentRepository.findById(id)
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found, id: " + id));
+                .orElseThrow(() -> new PaymentNotFoundException(id));
 
         return PaymentOutputAssembler.from(payment);
     }

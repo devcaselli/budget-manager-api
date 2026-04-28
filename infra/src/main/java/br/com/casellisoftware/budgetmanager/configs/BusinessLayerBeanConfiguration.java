@@ -7,7 +7,6 @@ import br.com.casellisoftware.budgetmanager.application.bullet.usecase.FindBulle
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.PatchBulletUseCase;
 import br.com.casellisoftware.budgetmanager.application.bullet.usecase.SaveBulletUseCase;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.DeleteExpenseByIdBoundary;
-import br.com.casellisoftware.budgetmanager.application.expense.boundary.FindExpenseByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.DeleteExpenseByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.expense.usecase.FindExpenseByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.payment.boundary.DeleteAllPaymentByIdBoundary;
