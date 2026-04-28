@@ -21,12 +21,12 @@ public class FindBulletByIdUseCase implements FindBulletByIdBoundary {
 
     @Override
     public BulletOutput execute(String id) {
-        log.info("Finding bullet by id={}", id);
+        log.debug("Finding bullet by id={}", id);
 
         Bullet bullet = bulletRepository.findById(id)
                 .orElseThrow(() -> new BulletNotFoundException(id));
 
-        log.info("Bullet found, id={}", bullet.getId());
+        log.debug("Bullet found, id={}", bullet.getId());
         return BulletOutputAssembler.from(bullet);
     }
 }

@@ -1,10 +1,14 @@
 package br.com.casellisoftware.budgetmanager.domain.expense;
 
+import br.com.casellisoftware.budgetmanager.domain.payment.Payment;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -99,6 +103,55 @@ class ExpenseTest {
         assertThatThrownBy(() -> expense.debit(Money.zero()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("positive");
+    }
+
+    @Test
+    void expenseEqualsById_evenAfterDebit() {
+        Expense original = new Expense("expense-1", "wallet-1", "lunch", TEN, TEN, TODAY);
+        Payment payment = Payment.rebuild(
+                "payment-1",
+                Money.of("4.00"),
+                Instant.parse("2026-04-21T10:00:00Z"),
+                "partial payment",
+                "expense-1",
+                "wallet-1",
+                "bullet-1"
+        );
+
+        Set<Expense> expenses = new HashSet<>(Set.of(original));
+        Expense debited = original.pay(payment);
+
+        assertThat(debited).isEqualTo(original);
+        assertThat(expenses).contains(debited);
+    }
+
+    @Test
+    void pay_debitsRemainingAndAppendsPaymentId() {
+        Expense original = new Expense(
+                "expense-1",
+                "wallet-1",
+                "lunch",
+                TEN,
+                TEN,
+                TODAY,
+                List.of("payment-0")
+        );
+        Payment payment = Payment.rebuild(
+                "payment-1",
+                Money.of("4.00"),
+                Instant.parse("2026-04-21T10:00:00Z"),
+                "partial payment",
+                "expense-1",
+                "wallet-1",
+                "bullet-1"
+        );
+
+        Expense paid = original.pay(payment);
+
+        assertThat(paid.getRemaining()).isEqualTo(Money.of("6.00"));
+        assertThat(paid.getPaymentIds()).containsExactly("payment-0", "payment-1");
+        assertThat(original.getRemaining()).isEqualTo(TEN);
+        assertThat(original.getPaymentIds()).containsExactly("payment-0");
     }
 
     // ---- patch ----

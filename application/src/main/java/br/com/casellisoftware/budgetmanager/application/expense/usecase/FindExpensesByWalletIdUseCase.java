@@ -27,7 +27,7 @@ public class FindExpensesByWalletIdUseCase implements FindExpensesByWalletIdBoun
 
     @Override
     public PageResult<ExpenseOutput> execute(String walletId, int page, int size) {
-        log.info("Finding expenses for walletId={}, page={}, size={}", walletId, page, size);
+        log.debug("Finding expenses for walletId={}, page={}, size={}", walletId, page, size);
 
         findWalletByIdBoundary.findById(walletId);
 
@@ -37,7 +37,7 @@ public class FindExpensesByWalletIdUseCase implements FindExpensesByWalletIdBoun
                 .map(ExpenseOutputAssembler::from)
                 .toList();
 
-        log.info("Found {} expenses for walletId={} (page {}/{})",
+        log.debug("Found {} expenses for walletId={} (page {}/{})",
                 outputs.size(), walletId, page, expensePage.totalPages());
 
         return new PageResult<>(

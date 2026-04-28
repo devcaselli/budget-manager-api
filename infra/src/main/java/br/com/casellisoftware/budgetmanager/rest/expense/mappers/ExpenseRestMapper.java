@@ -2,14 +2,13 @@ package br.com.casellisoftware.budgetmanager.rest.expense.mappers;
 
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseInput;
 import br.com.casellisoftware.budgetmanager.application.expense.boundary.ExpenseOutput;
+import br.com.casellisoftware.budgetmanager.configs.mapstruct.ProjectMapper;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.domain.shared.PageResult;
 import br.com.casellisoftware.budgetmanager.rest.expense.dtos.ExpenseRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.expense.dtos.ExpenseResponseDto;
 import br.com.casellisoftware.budgetmanager.rest.expense.dtos.PagedExpenseResponseDto;
 import org.mapstruct.Mapper;
-import org.mapstruct.NullValueCheckStrategy;
-import org.mapstruct.ReportingPolicy;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,16 +22,9 @@ import java.util.List;
  *       mapping fails the build.</li>
  *   <li>{@code unmappedSourcePolicy = ERROR} — adding a source field without
  *       consuming it fails the build.</li>
- *   <li>{@code nullValueCheckStrategy = ALWAYS} — defend against nulls at
- *       every mapping step.</li>
  * </ul>
  */
-@Mapper(
-        componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.ERROR,
-        unmappedSourcePolicy = ReportingPolicy.ERROR,
-        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS
-)
+@Mapper(config = ProjectMapper.class)
 public interface ExpenseRestMapper {
 
     ExpenseInput expenseRequestDtoToExpenseInput(ExpenseRequestDto expenseRequestDto);

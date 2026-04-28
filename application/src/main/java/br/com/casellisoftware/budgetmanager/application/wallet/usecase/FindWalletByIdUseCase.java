@@ -22,11 +22,11 @@ public class FindWalletByIdUseCase implements FindWalletByIdBoundary {
 
     @Override
     public WalletOutput findById(String id) {
-        log.info("Finding wallet by id {}", id);
+        log.debug("Finding wallet by id {}", id);
         Wallet wallet = walletRepository.findById(id)
                 .orElseThrow(() -> new WalletNotFoundException(id));
 
-        log.info("Wallet found {}", wallet);
+        log.debug("Wallet found {}", wallet);
         return WalletOutputAssembler.from(wallet);
     }
 }

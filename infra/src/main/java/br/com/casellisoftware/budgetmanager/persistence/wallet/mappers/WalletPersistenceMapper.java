@@ -1,11 +1,11 @@
 package br.com.casellisoftware.budgetmanager.persistence.wallet.mappers;
 
+import br.com.casellisoftware.budgetmanager.configs.mapstruct.ProjectMapper;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.domain.wallet.Wallet;
 import br.com.casellisoftware.budgetmanager.persistence.wallet.WalletDocument;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
 
 import java.util.Currency;
 
@@ -17,9 +17,7 @@ import java.util.Currency;
  * default method because reconstructing {@link Money} from separate fields
  * requires building {@link Currency} instances.</p>
  */
-@Mapper(componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.ERROR,
-        unmappedSourcePolicy = ReportingPolicy.ERROR)
+@Mapper(config = ProjectMapper.class)
 public interface WalletPersistenceMapper {
 
     @Mapping(source = "closed", target = "isClosed")

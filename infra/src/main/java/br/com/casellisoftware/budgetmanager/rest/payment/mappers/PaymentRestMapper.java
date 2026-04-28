@@ -1,12 +1,11 @@
 package br.com.casellisoftware.budgetmanager.rest.payment.mappers;
 
 import br.com.casellisoftware.budgetmanager.application.payment.boundary.PayExpenseInput;
+import br.com.casellisoftware.budgetmanager.configs.mapstruct.ProjectMapper;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.rest.payment.dtos.PayRequestDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.NullValueCheckStrategy;
-import org.mapstruct.ReportingPolicy;
 
 import java.util.Currency;
 
@@ -14,12 +13,7 @@ import java.util.Currency;
  * Strict MapStruct mapper for REST DTO ↔ application boundary records
  * for the payment flow.
  */
-@Mapper(
-        componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.ERROR,
-        unmappedSourcePolicy = ReportingPolicy.ERROR,
-        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS
-)
+@Mapper(config = ProjectMapper.class)
 public interface PaymentRestMapper {
 
     @Mapping(target = "amount", expression = "java(toMoney(request))")

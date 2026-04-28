@@ -106,10 +106,12 @@ public final class Expense {
      */
     public Expense pay(Payment payment) {
 
-        List<String> updatedIds = new ArrayList<>(this.paymentIds);
+        List<String> updatedIds = new ArrayList<>(this.paymentIds.size() + 1);
+        updatedIds.addAll(this.paymentIds);
         updatedIds.add(payment.getId());
-        return new Expense(this.id, this.walletId, this.name, this.cost, this.remaining, this.purchaseDate, updatedIds)
-                .debit(payment.getAmount());
+
+        Money newRemaining = this.remaining.debitBy(payment.getAmount());
+        return new Expense(this.id, this.walletId, this.name, this.cost, newRemaining, this.purchaseDate, updatedIds);
     }
 
     /**
@@ -171,18 +173,11 @@ public final class Expense {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Expense other)) return false;
-        return Objects.equals(id, other.id)
-                && Objects.equals(walletId, other.walletId)
-                && Objects.equals(name, other.name)
-                && Objects.equals(cost, other.cost)
-                && Objects.equals(remaining, other.remaining)
-                && Objects.equals(purchaseDate, other.purchaseDate);
+        return o instanceof Expense expense && Objects.equals(id, expense.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, walletId, name, cost, remaining, purchaseDate);
+        return Objects.hashCode(id);
     }
 }

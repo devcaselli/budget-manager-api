@@ -1,15 +1,14 @@
 package br.com.casellisoftware.budgetmanager.persistence.expense.mappers;
 
+import br.com.casellisoftware.budgetmanager.configs.mapstruct.ProjectMapper;
 import br.com.casellisoftware.budgetmanager.domain.expense.Expense;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.persistence.expense.ExpenseDocument;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
 import java.util.Currency;
 
 /**
@@ -21,11 +20,8 @@ import java.util.Currency;
  * (amount + currency) with a fallback requires logic that MapStruct's declarative
  * model doesn't express cleanly.</p>
  */
-@Mapper(componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(config = ProjectMapper.class)
 public interface ExpensePersistenceMapper {
-
-    Logger log = LoggerFactory.getLogger(ExpensePersistenceMapper.class);
 
     @Mapping(target = "cost", source = "expense.cost.amount")
     @Mapping(target = "remaining", source = "expense.remaining.amount")
@@ -42,7 +38,7 @@ public interface ExpensePersistenceMapper {
     default Expense toDomain(ExpenseDocument document) {
         Currency currency;
         if (document.getCurrency() == null) {
-            log.warn("Document id={} has no currency — falling back to {}",
+            log().warn("Document id={} has no currency — falling back to {}",
                     document.getId(), Money.DEFAULT_CURRENCY);
             currency = Money.DEFAULT_CURRENCY;
         } else {
@@ -57,5 +53,9 @@ public interface ExpensePersistenceMapper {
                 document.getPurchaseDate(),
                 document.getPaymentIds()
         );
+    }
+
+    private static Logger log() {
+        return LoggerFactory.getLogger(ExpensePersistenceMapper.class);
     }
 }

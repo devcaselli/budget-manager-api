@@ -1,11 +1,11 @@
 package br.com.casellisoftware.budgetmanager.persistence.bullet.mappers;
 
+import br.com.casellisoftware.budgetmanager.configs.mapstruct.ProjectMapper;
 import br.com.casellisoftware.budgetmanager.domain.bullet.Bullet;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.persistence.bullet.BulletDocument;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,11 +20,8 @@ import java.util.Currency;
  * (amount + currency) with a fallback requires logic that MapStruct's declarative
  * model doesn't express cleanly.</p>
  */
-@Mapper(componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(config = ProjectMapper.class)
 public interface BulletPersistenceMapper {
-
-    Logger log = LoggerFactory.getLogger(BulletPersistenceMapper.class);
 
     @Mapping(target = "budget", source = "bullet.budget.amount")
     @Mapping(target = "remaining", source = "bullet.remaining.amount")
@@ -41,7 +38,7 @@ public interface BulletPersistenceMapper {
     default Bullet toDomain(BulletDocument document) {
         Currency currency;
         if (document.getCurrency() == null) {
-            log.warn("Document id={} has no currency — falling back to {}",
+            log().warn("Document id={} has no currency — falling back to {}",
                     document.getId(), Money.DEFAULT_CURRENCY);
             currency = Money.DEFAULT_CURRENCY;
         } else {
@@ -54,5 +51,9 @@ public interface BulletPersistenceMapper {
                 Money.of(document.getRemaining(), currency),
                 document.getWalletId()
         );
+    }
+
+    private static Logger log() {
+        return LoggerFactory.getLogger(BulletPersistenceMapper.class);
     }
 }
