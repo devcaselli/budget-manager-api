@@ -28,8 +28,10 @@ import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalD
 import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalPatchBulletBoundary;
 import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalPayExpenseBoundary;
 import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalSaveBulletBoundary;
+import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindAllWalletsBoundary;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletDomainByIdBoundary;
+import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindAllWalletsUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletDomainByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.FindWalletByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.SaveWalletUseCase;
@@ -127,6 +129,11 @@ public class BusinessLayerBeanConfiguration {
     @Bean
     public SaveWalletUseCase saveWalletBoundary(WalletRepository walletRepository) {
         return new SaveWalletUseCase(walletRepository);
+    }
+
+    @Bean
+    public FindAllWalletsBoundary findAllWalletsBoundary(WalletRepository walletRepository) {
+        return new FindAllWalletsUseCase(walletRepository);
     }
 
     @Bean

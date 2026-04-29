@@ -6,6 +6,7 @@ import br.com.casellisoftware.budgetmanager.persistence.wallet.mappers.WalletPer
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,6 +20,14 @@ public class WalletRepositoryImpl implements WalletRepository {
     public Optional<Wallet> findById(String id) {
         return this.walletMongoRepository.findById(id)
                 .map(mapper::toDomain);
+    }
+
+    @Override
+    public List<Wallet> findAll() {
+        return this.walletMongoRepository.findAll()
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     @Override

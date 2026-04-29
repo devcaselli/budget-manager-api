@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoOperations;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,5 +71,20 @@ class WalletRepositoryImplTest extends AbstractMongoIntegrationTest {
     @Test
     void findById_whenMissing_returnsEmpty() {
         assertThat(repository.findById("nonexistent-id")).isEmpty();
+    }
+
+    @Test
+    void findAll_returnsMappedWallets() {
+        Wallet main = repository.save(newWallet("Main wallet", "3000.00"));
+        Wallet side = repository.save(newWallet("Side wallet", "100.00"));
+
+        List<Wallet> result = repository.findAll();
+
+        assertThat(result)
+                .extracting(Wallet::getId)
+                .contains(main.getId(), side.getId());
+        assertThat(result)
+                .extracting(Wallet::getDescription)
+                .contains("Main wallet", "Side wallet");
     }
 }

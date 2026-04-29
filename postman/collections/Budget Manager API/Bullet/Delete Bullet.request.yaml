@@ -1,0 +1,12 @@
+$kind: http-request
+name: Delete Bullet
+method: DELETE
+url: "{{baseUrl}}/bullets/{{bulletId}}"
+order: 1775858120000
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 204", function () {
+        pm.response.to.have.status(204);
+      });
+    language: text/javascript
