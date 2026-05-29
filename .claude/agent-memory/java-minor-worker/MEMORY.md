@@ -1,0 +1,3 @@
+- [Major Refactors Applied](project_major_refactors.md) — 5 majors from subscriptions-code-review.md: template method strategies, patch flag parity, null object, registry builder, config split
+- [Critical + Codex Fixes](project_minor_criticals.md) — 3 criticals + Codex residuals applied 2026-05-07: typed exception, single-constructor SaveBullet, test YAML, registry NONE guard
+- [Preview Wallet Subscription Test](project_preview_wallet_test.md) — 2 tests for FindSubscriptionChargesByWalletIdUseCase covering PREVIEW/PRODUCTION wallet paths (applied 2026-05-07)

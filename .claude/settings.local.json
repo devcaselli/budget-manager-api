@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rtk ./mvnw test -pl application --no-transfer-progress -q)",
+      "Bash(rtk ./mvnw test -pl application --no-transfer-progress -Dtest=\"FindBulletsByWalletIdUseCaseTest,FindPaymentsByWalletIdUseCaseTest\")",
+      "Bash(rtk find *)",
+      "Bash(rtk read *)",
+      "Bash(rtk ls *)",
+      "Bash(rtk grep *)",
+      "Bash(rtk git *)",
+      "Bash(rtk proxy *)",
+      "Bash(./mvnw -pl domain test -Dtest='SubscriptionTest,SubscriptionVersionTest,SubscriptionPatchTest,SubscriptionChargeTest,NotFoundExceptionContractTest' -q)",
+      "Bash(./mvnw -pl domain test -Dtest='SubscriptionTest,SubscriptionVersionTest,SubscriptionPatchTest,SubscriptionChargeTest,NotFoundExceptionContractTest')",
+      "Bash(xargs cat -n)",
+      "Bash(rtk docker *)",
+      "Bash(mvn test *)",
+      "Bash(rtk mvn *)",
+      "Bash(mvn test-compile *)"
+    ]
+  }
+}

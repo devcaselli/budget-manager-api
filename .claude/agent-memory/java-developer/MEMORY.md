@@ -1,0 +1,2 @@
+- [Delegation strategy](feedback_delegation_strategy.md) — prefer inline Write/Edit over java-minor-worker when templates already read; subagent cold-start wastes 100k+ tokens per task
+- [Compact before build](feedback_compact_before_build.md) — before each new build task, analyze context cost and warn user if compact advisable; show what retained/discarded

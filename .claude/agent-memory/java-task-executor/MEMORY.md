@@ -1,0 +1,3 @@
+- [Project Architecture](project_architecture.md) — Multi-module Maven (domain/application/infra), Spring Boot 4.0.5, Java 21, MongoDB
+- [Coding Conventions](coding_conventions.md) — Use cases as plain classes, constructor injection, no Lombok on domain, ProjectMapper config
+- [Security Infrastructure](security_infrastructure.md) — RSA JWT self-signed, BCrypt passwords, conditional test security config
