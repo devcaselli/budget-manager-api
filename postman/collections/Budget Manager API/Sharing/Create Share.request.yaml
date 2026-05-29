@@ -1,0 +1,31 @@
+$kind: http-request
+name: Create Share
+method: POST
+url: "{{baseUrl}}/shares"
+order: 1775858140000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "walletId": "{{walletId}}",
+      "sourceType": "EXPENSE",
+      "sourceId": "{{expenseId}}",
+      "totalAmount": 5000.00,
+      "currency": "BRL",
+      "ownerShare": 2500.00,
+      "quotas": [
+        { "transient_": { "name": "Maria Silva", "paymentDate": "2026-06-05" }, "amount": 2500.00 }
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
+
+      var id = pm.response.json().id;
+      pm.collectionVariables.set("shareId", id);
+    language: text/javascript

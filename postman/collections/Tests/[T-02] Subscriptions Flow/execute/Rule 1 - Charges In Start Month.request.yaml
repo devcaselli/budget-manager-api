@@ -1,0 +1,18 @@
+$kind: http-request
+name: Rule 1 - Charges In Start Month
+url: "{{baseUrl}}/wallets/{{walletId}}/subscription-charges"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("One subscription charge was materialized", function () {
+        var charges = pm.response.json();
+        pm.expect(charges).to.have.length(1);
+        pm.expect(charges[0].amount).to.eql(200.00);
+      });
+    language: text/javascript
+order: 1776118294000

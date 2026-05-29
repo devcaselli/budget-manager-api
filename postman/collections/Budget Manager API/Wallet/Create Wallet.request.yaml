@@ -1,0 +1,28 @@
+$kind: http-request
+name: Create Wallet
+method: POST
+url: "{{baseUrl}}/wallets"
+order: 1775858095723
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "description": "Testes",
+      "budget": 10000.00,
+      "startDate": "2026-06-10",
+      "closedDate": "2026-07-13",
+      "closed": false
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
+
+
+      var id = pm.response.json().id;
+      pm.collectionVariables.set("walletId", id);
+    language: text/javascript

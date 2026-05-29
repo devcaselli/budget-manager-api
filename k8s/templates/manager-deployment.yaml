@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: budget-manager-api
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.managerApi.replicas }}
+  selector:
+    matchLabels:
+      app: budget-manager-api
+  template:
+    metadata:
+      labels:
+        app: budget-manager-api
+    spec:
+      containers:
+        - name: api
+          image: {{ .Values.managerApi.image.repository }}:{{ .Values.managerApi.image.tag }}
+          imagePullPolicy: {{ .Values.managerApi.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.managerApi.port }}
+          envFrom:
+            - configMapRef:
+                name: manager-api-config
+          env:
+            - name: MONGODB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: manager-api-secret
+                  key: MONGODB_URL
+            - name: APP_SYNC_INGEST_URL
+              valueFrom:
+                secretKeyRef:
+                  name: manager-api-secret
+                  key: APP_SYNC_INGEST_URL
+            - name: APP_SYNC_INGEST_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: manager-api-secret
+                  key: APP_SYNC_INGEST_API_KEY
+          volumeMounts:
+            - name: rsa-keys
+              mountPath: /run/secrets
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.managerApi.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.managerApi.port }}
+            initialDelaySeconds: 60
+            periodSeconds: 20
+      volumes:
+        - name: rsa-keys
+          secret:
+            secretName: manager-api-secret
+            items:
+              - key: bm-private.pem
+                path: bm-private.pem
+              - key: bm-public.pem
+                path: bm-public.pem

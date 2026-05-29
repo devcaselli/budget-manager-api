@@ -1,0 +1,20 @@
+$kind: http-request
+name: Delete Credit Card In Use
+method: DELETE
+url: "{{baseUrl}}/credit-cards/{{creditCardId}}"
+order: 1775858120100
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 409", function () {
+        pm.response.to.have.status(409);
+      });
+
+      pm.test("Returns reference counts only", function () {
+        const body = pm.response.json();
+        pm.expect(body.expenseCount).to.be.a("number");
+        pm.expect(body.installmentCount).to.be.a("number");
+        pm.expect(body.expenseIds).to.be.undefined;
+        pm.expect(body.installmentIds).to.be.undefined;
+      });
+    language: text/javascript

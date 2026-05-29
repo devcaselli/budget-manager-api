@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: budget-ingest-api
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.ingestApi.replicas }}
+  selector:
+    matchLabels:
+      app: budget-ingest-api
+  template:
+    metadata:
+      labels:
+        app: budget-ingest-api
+    spec:
+      containers:
+        - name: api
+          image: {{ .Values.ingestApi.image.repository }}:{{ .Values.ingestApi.image.tag }}
+          imagePullPolicy: {{ .Values.ingestApi.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.ingestApi.port }}
+          env:
+            - name: PORT
+              value: {{ .Values.ingestApi.env.PORT | quote }}
+            - name: DB_PATH
+              value: {{ .Values.ingestApi.env.DB_PATH | quote }}
+            - name: TEMPLATES_DIR
+              value: {{ .Values.ingestApi.env.TEMPLATES_DIR | quote }}
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ingest-api-secret
+                  key: API_KEY
+          volumeMounts:
+            - name: ingest-data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.ingestApi.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.ingestApi.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 20
+      volumes:
+        - name: ingest-data
+          persistentVolumeClaim:
+            claimName: ingest-data

@@ -1,0 +1,26 @@
+$kind: http-request
+name: Rule 1 - Create Wallet Before Start Month
+url: "{{baseUrl}}/wallets"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "description": "T-02 before subscription month",
+      "budget": 1000.00,
+      "startDate": "2026-04-01",
+      "closedDate": null,
+      "closed": false
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
+
+      pm.collectionVariables.set("walletBeforeSubscriptionId", pm.response.json().id);
+    language: text/javascript
+order: 1776118291000

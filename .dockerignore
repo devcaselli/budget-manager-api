@@ -1,0 +1,17 @@
+.git
+.idea
+.vscode
+target
+**/target
+.env
+.env.*
+*.pem
+*.key
+*.crt
+compose.local.yml
+compose.local.yaml
+compose.override.yml
+compose.override.yaml
+model-trash
+model-handoff-and-analysis
+todos

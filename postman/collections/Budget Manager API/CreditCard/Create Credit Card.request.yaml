@@ -1,0 +1,23 @@
+$kind: http-request
+name: Create Credit Card
+method: POST
+url: "{{baseUrl}}/credit-cards"
+order: 1775858117000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Nubank"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
+
+      var id = pm.response.json().id;
+      pm.collectionVariables.set("creditCardId", id);
+    language: text/javascript

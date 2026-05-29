@@ -1,0 +1,26 @@
+$kind: http-request
+name: Create Installment Invalid Number
+method: POST
+url: "{{baseUrl}}/expenses"
+order: 1775858089640
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Notebook invalid installment",
+      "cost": 6000.00,
+      "purchaseDate": "2026-05-10",
+      "walletId": "{{walletId}}",
+      "creditCardId": "{{creditCardId}}",
+      "installment": true,
+      "installmentNumber": 1
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 400", function () {
+        pm.response.to.have.status(400);
+      });
+    language: text/javascript

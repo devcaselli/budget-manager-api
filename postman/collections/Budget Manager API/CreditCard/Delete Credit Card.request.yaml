@@ -1,0 +1,12 @@
+$kind: http-request
+name: Delete Credit Card
+method: DELETE
+url: "{{baseUrl}}/credit-cards/{{creditCardId}}"
+order: 1775858120000
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 204 or 409", function () {
+        pm.expect([204, 409]).to.include(pm.response.code);
+      });
+    language: text/javascript

@@ -1,0 +1,20 @@
+$kind: http-request
+name: Rule 2 - Patch Subscription Value
+url: "{{baseUrl}}/subscriptions/{{subscriptionId}}"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "newAmount": 150.00
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+    language: text/javascript
+order: 1776118295000

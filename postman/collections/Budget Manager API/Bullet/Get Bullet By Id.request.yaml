@@ -1,0 +1,12 @@
+$kind: http-request
+name: Get Bullet By Id
+method: GET
+url: '{{baseUrl}}/bullets/{{bulletId}}'
+order: 1775858110000
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+    language: text/javascript

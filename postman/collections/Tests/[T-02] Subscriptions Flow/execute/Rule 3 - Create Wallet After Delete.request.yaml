@@ -1,0 +1,30 @@
+$kind: http-request
+name: Rule 3 - Create Wallet After Delete
+url: "{{baseUrl}}/wallets"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "description": "T-02 after subscription delete",
+      "budget": 1000.00,
+      "startDate": "2026-05-15",
+      "closedDate": null,
+      "closed": false
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
+
+      var body = pm.response.json();
+      pm.collectionVariables.set("walletAfterDeleteId", body.id);
+      pm.test("Wallet remaining was not debited after delete", function () {
+        pm.expect(body.remaining).to.eql(1000.00);
+      });
+    language: text/javascript
+order: 1776118298000

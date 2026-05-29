@@ -1,0 +1,17 @@
+$kind: http-request
+name: List Installments By Wallet
+method: GET
+url: "{{baseUrl}}/installments/wallet/{{walletId}}"
+order: 1775858128000
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+
+      var body = pm.response.json();
+      if (Array.isArray(body) && body.length > 0) {
+        pm.collectionVariables.set("installmentId", body[0].id);
+      }
+    language: text/javascript

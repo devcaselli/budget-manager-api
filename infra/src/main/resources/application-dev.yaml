@@ -1,0 +1,51 @@
+spring:
+  mongodb:
+    uri: ${MONGODB_URL:${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/budgetmanager?replicaSet=rs0}}
+    database: budgetmanager
+    # DEV-ONLY: auto-create indexes from @Indexed annotations. In production this
+    # must be disabled and indexes managed via Mongock migrations (see Task 38)
+    # to avoid blocking deploys on large collections.
+    auto-index-creation: true
+  servlet:
+    multipart:
+      max-file-size: 1MB
+      max-request-size: 1MB
+
+server:
+  tomcat:
+    max-http-form-post-size: 256KB
+    max-swallow-size: 256KB
+  max-http-request-header-size: 16KB
+
+app:
+  security:
+    enabled: ${APP_SECURITY_ENABLED:true}
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:4200}
+  # JWT keys: apontar para arquivos PEM no filesystem (não commitar as chaves).
+  # Gerar com: openssl genrsa -out ~/bm-private.pem 2048 && openssl rsa -in ~/bm-private.pem -pubout -out ~/bm-public.pem
+  # No IntelliJ: Environment Variables → APP_JWT_PRIVATE_KEY_PATH=/home/seu-user/bm-private.pem
+  #                                         APP_JWT_PUBLIC_KEY_PATH=/home/seu-user/bm-public.pem
+  jwt:
+    issuer: ${APP_JWT_ISSUER:budgetmanager-api}
+    audiences: ${APP_JWT_AUDIENCES:budgetmanager-api}
+    expiration-seconds: ${APP_JWT_EXPIRATION_SECONDS:900}
+    refresh-expiration-seconds: ${APP_JWT_REFRESH_EXPIRATION_SECONDS:604800}
+    public-key-path: ${APP_JWT_PUBLIC_KEY_PATH}
+    private-key-path: ${APP_JWT_PRIVATE_KEY_PATH}
+  rate-limit:
+    enabled: false  # disabled in dev — enable with APP_RATE_LIMIT_ENABLED=true if needed
+  sync:
+    ingest:
+      base-url: ${APP_SYNC_INGEST_URL:http://localhost:8081}
+      api-key: ${APP_SYNC_INGEST_API_KEY:vdcp}
+      cron:
+        enabled: ${APP_SYNC_INGEST_CRON_ENABLED:true}
+        expression: ${APP_SYNC_INGEST_CRON_EXPRESSION:0 */1 11-12 * * *}
+      active-owner-window-days: ${APP_SYNC_INGEST_ACTIVE_WINDOW:7}
+      page-size: 100
+
+flags:
+  values:
+    BULLET_IGNORE_SUBSCRIPTION_RESERVATION: false
+    SUBSCRIPTION_DELETE_IGNORE_DATE_VALIDATION: true

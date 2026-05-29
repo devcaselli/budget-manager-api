@@ -1,0 +1,12 @@
+$kind: http-request
+name: Revert Share
+method: POST
+url: "{{baseUrl}}/shares/{{shareId}}/revert"
+order: 1775858141000
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 204", function () {
+        pm.response.to.have.status(204);
+      });
+    language: text/javascript

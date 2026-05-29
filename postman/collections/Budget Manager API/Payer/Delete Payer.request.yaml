@@ -1,0 +1,12 @@
+$kind: http-request
+name: Delete Payer
+method: DELETE
+url: "{{baseUrl}}/payers/{{payerId}}"
+order: 1775858129000
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 204", function () {
+        pm.response.to.have.status(204);
+      });
+    language: text/javascript

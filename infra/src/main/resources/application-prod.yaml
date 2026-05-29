@@ -1,0 +1,51 @@
+spring:
+  mongodb:
+    uri: "${MONGODB_URL}"
+    database: budgetmanager
+  servlet:
+    multipart:
+      max-file-size: 1MB
+      max-request-size: 1MB
+
+server:
+  tomcat:
+    max-http-form-post-size: 256KB
+    max-swallow-size: 256KB
+  max-http-request-header-size: 16KB
+
+app:
+  rate-limit:
+    enabled: ${APP_RATE_LIMIT_ENABLED:true}
+    trust-forwarded-for: ${APP_RATE_LIMIT_TRUST_FORWARDED_FOR:false}
+    cache-max-size: ${APP_RATE_LIMIT_CACHE_MAX_SIZE:10000}
+    cache-expiry-seconds: ${APP_RATE_LIMIT_CACHE_EXPIRY_SECONDS:3600}
+    token:
+      ip-requests-per-minute: ${APP_RATE_LIMIT_TOKEN_IP_RPM:20}
+      email-requests-per-hour: ${APP_RATE_LIMIT_TOKEN_EMAIL_RPH:10}
+    register:
+      ip-requests-per-hour: ${APP_RATE_LIMIT_REGISTER_IP_RPH:5}
+  security:
+    enabled: ${APP_SECURITY_ENABLED:true}
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}  # no fallback — fail fast rather than expose localhost defaults
+  jwt:
+    issuer: ${APP_JWT_ISSUER:budgetmanager-api}
+    audiences: ${APP_JWT_AUDIENCES:budgetmanager-api}
+    expiration-seconds: ${APP_JWT_EXPIRATION_SECONDS:900}
+    refresh-expiration-seconds: ${APP_JWT_REFRESH_EXPIRATION_SECONDS:604800}
+    public-key-path: ${APP_JWT_PUBLIC_KEY_PATH}
+    private-key-path: ${APP_JWT_PRIVATE_KEY_PATH}
+  sync:
+    ingest:
+      base-url: ${APP_SYNC_INGEST_URL}
+      api-key: ${APP_SYNC_INGEST_API_KEY}
+      cron:
+        enabled: ${APP_SYNC_INGEST_CRON_ENABLED:true}
+        expression: ${APP_SYNC_INGEST_CRON_EXPRESSION:0 */15 22-23 * * *}
+      active-owner-window-days: ${APP_SYNC_INGEST_ACTIVE_WINDOW:7}
+      page-size: 100
+
+flags:
+  values:
+    BULLET_IGNORE_SUBSCRIPTION_RESERVATION: false
+    SUBSCRIPTION_DELETE_IGNORE_DATE_VALIDATION: false

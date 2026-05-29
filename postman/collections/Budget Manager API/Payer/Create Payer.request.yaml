@@ -1,0 +1,27 @@
+$kind: http-request
+name: Create Payer
+method: POST
+url: "{{baseUrl}}/payers"
+order: 1775858125000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Joao Silva",
+      "type": "STANDING",
+      "walletId": null,
+      "subscriptionId": null,
+      "paymentDate": "2026-05-10"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
+
+      var id = pm.response.json().id;
+      pm.collectionVariables.set("payerId", id);
+    language: text/javascript

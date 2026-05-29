@@ -1,0 +1,28 @@
+$kind: http-request
+name: Create Future Subscription With Delete Date Flag
+method: POST
+url: "{{baseUrl}}/subscriptions"
+order: 1775858121000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "description": "Future flagged subscription",
+      "amount": 200.00,
+      "currency": "BRL",
+      "effectiveMonth": "2026-09",
+      "flag": "SUBSCRIPTION_DELETE_IGNORE_DATE_VALIDATION",
+      "creditCardId": "{{creditCardId}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
+
+      var id = pm.response.json().id;
+      pm.collectionVariables.set("futureSubscriptionId", id);
+    language: text/javascript

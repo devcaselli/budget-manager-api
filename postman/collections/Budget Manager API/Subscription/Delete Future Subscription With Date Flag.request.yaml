@@ -1,0 +1,12 @@
+$kind: http-request
+name: Delete Future Subscription With Date Flag
+method: DELETE
+url: "{{baseUrl}}/subscriptions/{{futureSubscriptionId}}"
+order: 1775858127000
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 204", function () {
+        pm.response.to.have.status(204);
+      });
+    language: text/javascript

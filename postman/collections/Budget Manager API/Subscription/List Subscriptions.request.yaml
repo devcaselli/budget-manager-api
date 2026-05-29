@@ -1,0 +1,15 @@
+$kind: http-request
+name: List Subscriptions
+method: GET
+url: "{{baseUrl}}/subscriptions?page=0&size=20"
+order: 1775858122000
+queryParams:
+  page: "0"
+  size: "20"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+    language: text/javascript

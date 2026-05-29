@@ -1,0 +1,14 @@
+$kind: http-request
+name: List Active Subscriptions
+method: GET
+url: "{{baseUrl}}/subscriptions?activeAt=2026-05"
+order: 1775858123000
+queryParams:
+  activeAt: "2026-05"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+    language: text/javascript

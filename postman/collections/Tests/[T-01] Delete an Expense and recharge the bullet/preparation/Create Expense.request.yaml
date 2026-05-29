@@ -1,0 +1,26 @@
+$kind: http-request
+name: Create Expense
+url: "{{baseUrl}}/expenses"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "T-01 {{$randomProduct}}",
+      "cost": 500.0,
+      "purchaseDate": "2026-01-10",
+      "walletId": "{{walletId}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
+
+      var id = pm.response.json().id;
+      pm.collectionVariables.set("expenseId", id);
+    language: text/javascript
+order: 4462218673240799

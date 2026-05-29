@@ -1,0 +1,16 @@
+$kind: http-request
+name: Get Deleted Payer
+method: GET
+url: "{{baseUrl}}/payers/{{payerId}}"
+order: 1775858130000
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("Payer is deleted", function () {
+        pm.expect(pm.response.json().deleted).to.eql(true);
+      });
+    language: text/javascript

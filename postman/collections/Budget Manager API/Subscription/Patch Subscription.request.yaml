@@ -1,0 +1,21 @@
+$kind: http-request
+name: Patch Subscription
+method: PATCH
+url: "{{baseUrl}}/subscriptions/{{subscriptionId}}"
+order: 1775858124000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "description": "Netflix Premium",
+      "newAmount": 150.00
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+    language: text/javascript

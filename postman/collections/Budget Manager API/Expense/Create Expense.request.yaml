@@ -1,0 +1,29 @@
+$kind: http-request
+name: Create Expense
+method: POST
+url: "{{baseUrl}}/expenses"
+order: 1775858089630
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Notebook",
+      "cost": 6000.00,
+      "purchaseDate": "2026-05-10",
+      "walletId": "{{walletId}}",
+      "creditCardId": "{{creditCardId}}",
+      "installment": true,
+      "installmentNumber": 6
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
+
+      var id = pm.response.json().id;
+      pm.collectionVariables.set("expenseId", id);
+    language: text/javascript

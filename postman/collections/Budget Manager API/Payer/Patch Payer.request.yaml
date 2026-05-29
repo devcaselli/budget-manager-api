@@ -1,0 +1,21 @@
+$kind: http-request
+name: Patch Payer
+method: PATCH
+url: "{{baseUrl}}/payers/{{payerId}}"
+order: 1775858128000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Joao da Silva",
+      "paymentDate": "2026-06-15"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+    language: text/javascript

@@ -1,0 +1,12 @@
+$kind: http-request
+name: Delete Subscription
+method: DELETE
+url: "{{baseUrl}}/subscriptions/{{subscriptionId}}"
+order: 1775858126000
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 204", function () {
+        pm.response.to.have.status(204);
+      });
+    language: text/javascript

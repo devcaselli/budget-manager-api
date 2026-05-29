@@ -1,0 +1,12 @@
+$kind: http-request
+name: List Subscription Charges By Wallet
+method: GET
+url: "{{baseUrl}}/wallets/{{walletId}}/subscription-charges"
+order: 1775858125000
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+    language: text/javascript

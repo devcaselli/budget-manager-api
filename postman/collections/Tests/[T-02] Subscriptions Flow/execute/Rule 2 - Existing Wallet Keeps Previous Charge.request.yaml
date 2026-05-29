@@ -1,0 +1,18 @@
+$kind: http-request
+name: Rule 2 - Existing Wallet Keeps Previous Charge
+url: "{{baseUrl}}/wallets/{{walletId}}/subscription-charges"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("Existing materialized wallet keeps previous amount", function () {
+        var charges = pm.response.json();
+        pm.expect(charges).to.have.length(1);
+        pm.expect(charges[0].amount).to.eql(200.00);
+      });
+    language: text/javascript
+order: 1776118295100

@@ -1,0 +1,14 @@
+name: 'Local'
+values:
+  - key: baseUrl
+    value: 'http://localhost:8080'
+    enabled: true
+    type: default
+  - key: creditCardId
+    value: ''
+    enabled: true
+    type: default
+  - key: installmentId
+    value: ''
+    enabled: true
+    type: default

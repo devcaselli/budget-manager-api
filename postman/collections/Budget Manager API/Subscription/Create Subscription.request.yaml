@@ -1,0 +1,26 @@
+$kind: http-request
+name: Create Subscription
+method: POST
+url: "{{baseUrl}}/subscriptions"
+order: 1775858120000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "description": "Netflix",
+      "amount": 200.00,
+      "currency": "BRL",
+      "creditCardId": "{{creditCardId}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
+
+      var id = pm.response.json().id;
+      pm.collectionVariables.set("subscriptionId", id);
+    language: text/javascript

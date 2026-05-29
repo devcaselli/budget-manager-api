@@ -1,0 +1,16 @@
+$kind: http-request
+name: Delete Installment Twice
+method: DELETE
+url: "{{baseUrl}}/installments/{{installmentId}}"
+order: 1775858129100
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 409", function () {
+        pm.response.to.have.status(409);
+      });
+
+      pm.test("Returns already deleted problem", function () {
+        pm.expect(pm.response.json().title).to.eql("Installment already deleted");
+      });
+    language: text/javascript

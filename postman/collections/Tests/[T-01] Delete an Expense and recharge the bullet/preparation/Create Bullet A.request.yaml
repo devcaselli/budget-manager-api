@@ -1,0 +1,26 @@
+$kind: http-request
+name: Create Bullet A
+url: "{{baseUrl}}/bullets"
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "description": "T-01 {{$randomUUID}}",
+      "budget": 5000.0,
+      "walletId": "{{walletId}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
+
+      var id = pm.response.json().id;
+      pm.collectionVariables.set("bulletId", id);
+    language: text/javascript
+order: 3598980644997135

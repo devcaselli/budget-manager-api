@@ -1,0 +1,30 @@
+$kind: http-request
+name: Pay A
+url: "{{baseUrl}}/pay"
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+queryParams:
+  - key: walletId
+    value: "{{walletId}}"
+body:
+  type: json
+  content: |-
+    {
+      "payment": {
+        "amount": 100.0,
+        "paymentDate": "2026-04-13T12:00:00Z",
+        "details": "T-01 A {{$randomUUID}}"
+      },
+      "bulletId": "{{bulletId}}",
+      "expenseId": "{{expenseId}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 204", function () {
+        pm.response.to.have.status(204);
+      });
+    language: text/javascript
+order: 4485568736859377

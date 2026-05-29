@@ -1,0 +1,30 @@
+$kind: http-request
+name: Rule 2 - Create Wallet After Patch
+url: "{{baseUrl}}/wallets"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "description": "T-02 after subscription patch",
+      "budget": 1000.00,
+      "startDate": "2026-05-20",
+      "closedDate": null,
+      "closed": false
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+        pm.response.to.have.status(201);
+      });
+
+      var body = pm.response.json();
+      pm.collectionVariables.set("walletAfterPatchId", body.id);
+      pm.test("Wallet remaining uses patched subscription amount", function () {
+        pm.expect(body.remaining).to.eql(850.00);
+      });
+    language: text/javascript
+order: 1776118295200
