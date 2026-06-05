@@ -38,14 +38,15 @@ public class FindSubscriptionChargesByWalletIdUseCase implements FindSubscriptio
 
         return WalletSubscriptionSelector.activeForWallet(subscriptionRepository, wallet)
                 .stream()
-                .map(subscription -> enrichWithShare(SubscriptionChargeOutputAssembler.preview(wallet, subscription), subscription))
+                .map(subscription -> enrichWithShare(
+                        SubscriptionChargeOutputAssembler.preview(wallet, subscription), subscription, wallet))
                 .toList();
     }
 
-    private SubscriptionChargeOutput enrichWithShare(SubscriptionChargeOutput preview, Subscription subscription) {
+    private SubscriptionChargeOutput enrichWithShare(SubscriptionChargeOutput preview, Subscription subscription, Wallet wallet) {
         Optional<Share> activeShare = shareRepository.findActiveBySourceId(
                 ShareSourceType.SUBSCRIPTION, subscription.getId(), subscription.getOwnerId());
-        if (activeShare.isEmpty()) {
+        if (activeShare.isEmpty() || !activeShare.get().isEffectiveFor(wallet.getEffectiveMonth())) {
             return preview;
         }
         Share share = activeShare.get();

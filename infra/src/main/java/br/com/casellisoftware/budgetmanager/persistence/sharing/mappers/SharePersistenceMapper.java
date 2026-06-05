@@ -35,6 +35,7 @@ public class SharePersistenceMapper {
                 share.getPaymentIds(),
                 share.getCreatedAt(),
                 share.getRevertedAt(),
+                share.getStoppedFromMonth(),
                 version
         );
     }
@@ -56,7 +57,8 @@ public class SharePersistenceMapper {
                 ShareStatus.valueOf(document.getStatus()),
                 document.getPaymentIds(),
                 document.getCreatedAt(),
-                document.getRevertedAt()
+                document.getRevertedAt(),
+                document.getStoppedFromMonth()
         );
     }
 

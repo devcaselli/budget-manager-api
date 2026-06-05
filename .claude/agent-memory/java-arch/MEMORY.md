@@ -3,3 +3,4 @@
 - [Architectural findings](payment_module_issues.md) — 2026-04-14 full-project review: standing bugs (Bullet.paymentId, Mongo URI, Payment currency), DIP cascade, SaaS gaps
 - [No cron for sub charges](feedback_no_cron_for_subs.md) — User rejected scheduled reconciler; sub→wallet materialization must be synchronous, mirroring SaveBulletUseCase
 - [Installments review](installments_review_findings.md) — 2026-05-12: failing E2E, DIP cascade into wallet usecases, 3-write save w/o atomic guarantee, missing Expense↔Installment back-link
+- [Sharing propagation model](sharing_propagation_model.md) — Share ownerRatio is owner-global, applied at read time across wallets (not replicated); stoppedFromMonth design for per-wallet month-forward stop

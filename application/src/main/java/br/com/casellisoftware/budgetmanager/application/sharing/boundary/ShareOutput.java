@@ -5,6 +5,7 @@ import br.com.casellisoftware.budgetmanager.domain.sharing.ShareStatus;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.YearMonth;
 import java.util.List;
 
 public record ShareOutput(
@@ -20,6 +21,7 @@ public record ShareOutput(
         List<ShareQuotaOutput> quotas,
         List<String> paymentIds,
         Instant createdAt,
-        Instant revertedAt
+        Instant revertedAt,
+        YearMonth stoppedFromMonth
 ) {
 }

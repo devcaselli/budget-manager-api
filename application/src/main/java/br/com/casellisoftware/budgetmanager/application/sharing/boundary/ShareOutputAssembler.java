@@ -48,7 +48,8 @@ public final class ShareOutputAssembler {
                 quotaOutputs,
                 share.getPaymentIds(),
                 share.getCreatedAt(),
-                share.getRevertedAt()
+                share.getRevertedAt(),
+                share.getStoppedFromMonth()
         );
     }
 

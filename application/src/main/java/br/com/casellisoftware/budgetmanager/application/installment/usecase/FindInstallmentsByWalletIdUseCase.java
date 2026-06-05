@@ -47,7 +47,7 @@ public class FindInstallmentsByWalletIdUseCase implements FindInstallmentsByWall
                 filter.page(),
                 filter.size(),
                 ownerId
-        ).map(installment -> enrichWithShare(installment, ownerId));
+        ).map(installment -> enrichWithShare(installment, wallet, ownerId));
     }
 
     @Override
@@ -65,7 +65,7 @@ public class FindInstallmentsByWalletIdUseCase implements FindInstallmentsByWall
                         effectiveSortOrder,
                         ownerId
                 ).stream()
-                .map(installment -> enrichWithShare(installment, ownerId))
+                .map(installment -> enrichWithShare(installment, wallet, ownerId))
                 .toList();
     }
 
@@ -73,9 +73,10 @@ public class FindInstallmentsByWalletIdUseCase implements FindInstallmentsByWall
         return findWalletDomainByIdBoundary.findById(walletId, ownerId);
     }
 
-    private InstallmentOutput enrichWithShare(Installment installment, String ownerId) {
+    private InstallmentOutput enrichWithShare(Installment installment, Wallet wallet, String ownerId) {
         Share active = shareRepository
                 .findActiveBySourceId(ShareSourceType.INSTALLMENT, installment.getId(), ownerId)
+                .filter(share -> share.isEffectiveFor(wallet.getEffectiveMonth()))
                 .orElse(null);
         return InstallmentOutputAssembler.from(installment, active);
     }

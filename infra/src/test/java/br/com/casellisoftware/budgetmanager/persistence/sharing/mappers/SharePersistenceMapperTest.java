@@ -80,6 +80,7 @@ class SharePersistenceMapperTest {
                 List.of(),
                 CREATED_AT,
                 CREATED_AT.plusSeconds(60),
+                null,
                 null
         );
 
@@ -87,6 +88,28 @@ class SharePersistenceMapperTest {
 
         assertThat(domain.getSourceType()).isEqualTo(ShareSourceType.SUBSCRIPTION);
         assertThat(domain.getStatus()).isEqualTo(ShareStatus.REVERTED);
+    }
+
+    @Test
+    void roundTripPreservesStoppedFromMonth() {
+        Share share = activeShare(ShareSourceType.SUBSCRIPTION).stopFrom(java.time.YearMonth.of(2026, 6));
+
+        ShareDocument document = mapper.toDocument(share, null);
+        assertThat(document.getStoppedFromMonth()).isEqualTo(java.time.YearMonth.of(2026, 6));
+
+        Share roundTripped = mapper.toDomain(document);
+        assertThat(roundTripped.getStoppedFromMonth()).isEqualTo(java.time.YearMonth.of(2026, 6));
+    }
+
+    @Test
+    void roundTripPreservesNullStoppedFromMonth() {
+        Share share = activeShare(ShareSourceType.SUBSCRIPTION);
+
+        ShareDocument document = mapper.toDocument(share, null);
+        assertThat(document.getStoppedFromMonth()).isNull();
+
+        Share roundTripped = mapper.toDomain(document);
+        assertThat(roundTripped.getStoppedFromMonth()).isNull();
     }
 
     @Test

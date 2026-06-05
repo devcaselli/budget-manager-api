@@ -9,8 +9,12 @@ import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletIn
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOutput;
 import br.com.casellisoftware.budgetmanager.application.payer.boundary.FindWalletPayersBoundary;
 import br.com.casellisoftware.budgetmanager.application.shared.AuthenticatedUser;
+import br.com.casellisoftware.budgetmanager.application.sharing.boundary.FindWalletSharesBoundary;
+import br.com.casellisoftware.budgetmanager.application.sharing.boundary.StopWalletShareBoundary;
 import br.com.casellisoftware.budgetmanager.rest.payer.dtos.PayerResponseDto;
 import br.com.casellisoftware.budgetmanager.rest.payer.mappers.PayerRestMapper;
+import br.com.casellisoftware.budgetmanager.rest.sharing.dtos.ShareResponseDto;
+import br.com.casellisoftware.budgetmanager.rest.sharing.mappers.ShareRestMapper;
 import br.com.casellisoftware.budgetmanager.rest.wallet.dtos.WalletPatchRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.wallet.dtos.WalletRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.wallet.dtos.WalletResponseDto;
@@ -40,8 +44,11 @@ public class WalletController {
     private final FindWalletByIdBoundary findWalletByIdBoundary;
     private final PatchWalletBoundary patchWalletBoundary;
     private final FindWalletPayersBoundary findWalletPayersBoundary;
+    private final FindWalletSharesBoundary findWalletSharesBoundary;
+    private final StopWalletShareBoundary stopWalletShareBoundary;
     private final WalletRestMapper walletRestMapper;
     private final PayerRestMapper payerRestMapper;
+    private final ShareRestMapper shareRestMapper;
 
     @PostMapping
     public ResponseEntity<WalletResponseDto> save(@Valid @RequestBody WalletRequestDto walletRequestDto,
@@ -104,5 +111,23 @@ public class WalletController {
                 .map(payerRestMapper::payerOutputToPayerResponseDto)
                 .toList();
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/shares")
+    public ResponseEntity<List<ShareResponseDto>> findWalletShares(@PathVariable("id") String walletId,
+                                                                   AuthenticatedUser authenticatedUser) {
+        List<ShareResponseDto> response = findWalletSharesBoundary.execute(walletId, authenticatedUser.ownerId())
+                .stream()
+                .map(shareRestMapper::toResponse)
+                .toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{walletId}/shares/{shareId}/stop")
+    public ResponseEntity<Void> stopWalletShare(@PathVariable String walletId,
+                                                @PathVariable String shareId,
+                                                AuthenticatedUser authenticatedUser) {
+        stopWalletShareBoundary.execute(walletId, shareId, authenticatedUser.ownerId());
+        return ResponseEntity.noContent().build();
     }
 }

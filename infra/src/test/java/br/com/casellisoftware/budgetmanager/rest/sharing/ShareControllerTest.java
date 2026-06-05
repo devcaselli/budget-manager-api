@@ -91,6 +91,7 @@ class ShareControllerTest {
                 List.of(),
                 List.of(),
                 Instant.parse("2026-05-14T12:00:00Z"),
+                null,
                 null
         );
         ShareResponseDto response = new ShareResponseDto(
@@ -106,6 +107,7 @@ class ShareControllerTest {
                 List.of(),
                 List.of(),
                 Instant.parse("2026-05-14T12:00:00Z"),
+                null,
                 null
         );
 
@@ -136,6 +138,7 @@ class ShareControllerTest {
                 List.of(),
                 List.of(),
                 Instant.parse("2026-05-14T12:00:00Z"),
+                null,
                 null
         );
         ShareResponseDto response = new ShareResponseDto(
@@ -151,6 +154,7 @@ class ShareControllerTest {
                 List.of(),
                 List.of(),
                 Instant.parse("2026-05-14T12:00:00Z"),
+                null,
                 null
         );
 

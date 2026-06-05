@@ -62,13 +62,15 @@ public final class InstallmentWalletBalanceCalculator {
                                 + ", installmentId=" + installment.getId() + ")"
                 );
             }
-            total = total.add(effectiveValue(installment, walletCurrency, activeShares.get(installment.getId())));
+            total = total.add(effectiveValue(installment, walletCurrency,
+                    activeShares.get(installment.getId()), wallet.getEffectiveMonth()));
         }
         return total;
     }
 
-    private static Money effectiveValue(Installment installment, Currency currency, Share activeShare) {
-        if (activeShare == null) {
+    private static Money effectiveValue(Installment installment, Currency currency, Share activeShare,
+                                        java.time.YearMonth walletMonth) {
+        if (activeShare == null || !activeShare.isEffectiveFor(walletMonth)) {
             return installment.getInstallmentValue();
         }
         BigDecimal scaled = installment.getInstallmentValue().amount()

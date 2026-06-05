@@ -11,6 +11,8 @@ import br.com.casellisoftware.budgetmanager.domain.sharing.ShareSourceType;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Clock;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,11 +41,14 @@ public class PayerAmountDueCalculator {
 
     private final ShareRepository shareRepository;
     private final InstallmentRepository installmentRepository;
+    private final Clock clock;
 
     public PayerAmountDueCalculator(ShareRepository shareRepository,
-                                    InstallmentRepository installmentRepository) {
+                                    InstallmentRepository installmentRepository,
+                                    Clock clock) {
         this.shareRepository = Objects.requireNonNull(shareRepository, "shareRepository must not be null");
         this.installmentRepository = Objects.requireNonNull(installmentRepository, "installmentRepository must not be null");
+        this.clock = Objects.requireNonNull(clock, "clock must not be null");
     }
 
     public PayerAmountDue calculate(Payer payer, String ownerId) {
@@ -62,6 +67,12 @@ public class PayerAmountDueCalculator {
                 resolvedOwnerId
         );
 
+        // A month-forward stop (share.stoppedFromMonth) zeroes the payer's
+        // *forward-looking* monthly exposure once the current month reaches the
+        // stop boundary. The journey (accumulated debt) is intentionally left
+        // unchanged here — an exact windowed journey (months already owed
+        // between the creation wallet and the stop) is a known follow-up.
+        YearMonth evalMonth = YearMonth.now(clock);
         Money monthlyTotal = null;
         Money journeyTotal = null;
         for (Share share : activeShares) {
@@ -70,14 +81,23 @@ public class PayerAmountDueCalculator {
                 continue;
             }
             Money journey = scaledMoney(share.getTotalAmount(), ratio);
+            journeyTotal = (journeyTotal == null) ? journey : addSameCurrency(journeyTotal, journey);
+            if (!share.isEffectiveFor(evalMonth)) {
+                continue;
+            }
             Money monthly = monthlyFor(share, ratio, installmentsById);
             monthlyTotal = (monthlyTotal == null) ? monthly : addSameCurrency(monthlyTotal, monthly);
-            journeyTotal = (journeyTotal == null) ? journey : addSameCurrency(journeyTotal, journey);
         }
-        if (monthlyTotal == null) {
+        if (journeyTotal == null) {
             return PayerAmountDue.zero();
         }
-        return new PayerAmountDue(monthlyTotal, journeyTotal);
+        // All contributing shares stopped: no forward monthly exposure, but the
+        // historical journey still stands. Default monthly to zero in the
+        // journey's currency rather than discarding the journey.
+        Money resolvedMonthly = (monthlyTotal == null)
+                ? Money.of(BigDecimal.ZERO, journeyTotal.currency())
+                : monthlyTotal;
+        return new PayerAmountDue(resolvedMonthly, journeyTotal);
     }
 
     private Money monthlyFor(Share share, BigDecimal ratio, Map<String, Installment> installmentsById) {

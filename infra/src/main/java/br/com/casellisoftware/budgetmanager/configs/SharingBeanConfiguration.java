@@ -4,15 +4,21 @@ import br.com.casellisoftware.budgetmanager.application.payer.usecase.EnsureTran
 import br.com.casellisoftware.budgetmanager.application.sharing.boundary.FindActiveShareBySourceBoundary;
 import br.com.casellisoftware.budgetmanager.application.sharing.boundary.FindAllSharesByOwnerBoundary;
 import br.com.casellisoftware.budgetmanager.application.sharing.boundary.FindShareByIdBoundary;
+import br.com.casellisoftware.budgetmanager.application.sharing.boundary.FindWalletSharesBoundary;
 import br.com.casellisoftware.budgetmanager.application.sharing.boundary.RevertShareBoundary;
 import br.com.casellisoftware.budgetmanager.application.sharing.boundary.SaveShareBoundary;
+import br.com.casellisoftware.budgetmanager.application.sharing.boundary.StopWalletShareBoundary;
 import br.com.casellisoftware.budgetmanager.application.sharing.usecase.FindActiveShareBySourceUseCase;
 import br.com.casellisoftware.budgetmanager.application.sharing.usecase.FindAllSharesByOwnerUseCase;
 import br.com.casellisoftware.budgetmanager.application.sharing.usecase.FindShareByIdUseCase;
+import br.com.casellisoftware.budgetmanager.application.sharing.usecase.FindWalletSharesUseCase;
 import br.com.casellisoftware.budgetmanager.application.sharing.usecase.RevertShareUseCase;
 import br.com.casellisoftware.budgetmanager.application.sharing.usecase.SaveShareUseCase;
+import br.com.casellisoftware.budgetmanager.application.sharing.usecase.StopWalletShareUseCase;
+import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletDomainByIdBoundary;
 import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalRevertShareBoundary;
 import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalSaveShareBoundary;
+import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalStopWalletShareBoundary;
 import br.com.casellisoftware.budgetmanager.domain.expense.ExpenseRepository;
 import br.com.casellisoftware.budgetmanager.domain.installment.InstallmentRepository;
 import br.com.casellisoftware.budgetmanager.domain.payment.PaymentRepository;
@@ -77,5 +83,23 @@ public class SharingBeanConfiguration {
     public FindAllSharesByOwnerBoundary findAllSharesByOwnerBoundary(ShareRepository shareRepository,
                                                                      PayerRepository payerRepository) {
         return new FindAllSharesByOwnerUseCase(shareRepository, payerRepository);
+    }
+
+    @Bean
+    public FindWalletSharesBoundary findWalletSharesBoundary(FindWalletDomainByIdBoundary findWalletDomainByIdBoundary,
+                                                             SubscriptionRepository subscriptionRepository,
+                                                             InstallmentRepository installmentRepository,
+                                                             ShareRepository shareRepository,
+                                                             PayerRepository payerRepository) {
+        return new FindWalletSharesUseCase(findWalletDomainByIdBoundary, subscriptionRepository,
+                installmentRepository, shareRepository, payerRepository);
+    }
+
+    @Bean
+    public StopWalletShareBoundary stopWalletShareBoundary(ShareRepository shareRepository,
+                                                           FindWalletDomainByIdBoundary findWalletDomainByIdBoundary) {
+        return new TransactionalStopWalletShareBoundary(
+                new StopWalletShareUseCase(shareRepository, findWalletDomainByIdBoundary)
+        );
     }
 }

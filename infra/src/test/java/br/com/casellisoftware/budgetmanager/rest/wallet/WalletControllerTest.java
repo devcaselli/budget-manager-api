@@ -4,6 +4,13 @@ import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindAllW
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.payer.boundary.FindWalletPayersBoundary;
 import br.com.casellisoftware.budgetmanager.application.payer.boundary.PayerOutput;
+import br.com.casellisoftware.budgetmanager.application.sharing.boundary.FindWalletSharesBoundary;
+import br.com.casellisoftware.budgetmanager.application.sharing.boundary.ShareOutput;
+import br.com.casellisoftware.budgetmanager.application.sharing.boundary.StopWalletShareBoundary;
+import br.com.casellisoftware.budgetmanager.domain.sharing.ShareSourceType;
+import br.com.casellisoftware.budgetmanager.domain.sharing.ShareStatus;
+import br.com.casellisoftware.budgetmanager.rest.sharing.dtos.ShareResponseDto;
+import br.com.casellisoftware.budgetmanager.rest.sharing.mappers.ShareRestMapper;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.PatchWalletBoundary;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.SaveWalletBoundary;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletInput;
@@ -84,10 +91,19 @@ class WalletControllerTest {
     private FindWalletPayersBoundary findWalletPayersBoundary;
 
     @MockitoBean
+    private FindWalletSharesBoundary findWalletSharesBoundary;
+
+    @MockitoBean
+    private StopWalletShareBoundary stopWalletShareBoundary;
+
+    @MockitoBean
     private WalletRestMapper mapper;
 
     @MockitoBean
     private PayerRestMapper payerRestMapper;
+
+    @MockitoBean
+    private ShareRestMapper shareRestMapper;
 
     @Test
     void save_validPayload_returns201WithLocationAndBody() throws Exception {
@@ -335,5 +351,56 @@ class WalletControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
                 .andExpect(jsonPath("$.title").value("Wallet not found"))
                 .andExpect(jsonPath("$.correlationId", matchesPattern(UUID_REGEX)));
+    }
+
+    @Test
+    void findWalletShares_returns200() throws Exception {
+        ShareOutput shareOutput = new ShareOutput(
+                "share-1",
+                "wallet-42",
+                ShareSourceType.SUBSCRIPTION,
+                "sub-1",
+                new BigDecimal("100.00"),
+                new BigDecimal("50.00"),
+                new BigDecimal("0.50000000"),
+                "BRL",
+                ShareStatus.ACTIVE,
+                List.of(),
+                List.of(),
+                null,
+                null,
+                null
+        );
+        ShareResponseDto shareResponse = new ShareResponseDto(
+                "share-1",
+                "wallet-42",
+                ShareSourceType.SUBSCRIPTION,
+                "sub-1",
+                new BigDecimal("100.00"),
+                new BigDecimal("50.00"),
+                new BigDecimal("0.50000000"),
+                "BRL",
+                ShareStatus.ACTIVE,
+                List.of(),
+                List.of(),
+                null,
+                null,
+                null
+        );
+        when(findWalletSharesBoundary.execute("wallet-42", "legacy")).thenReturn(List.of(shareOutput));
+        when(shareRestMapper.toResponse(shareOutput)).thenReturn(shareResponse);
+
+        mockMvc.perform(get(WALLETS_PATH + "/wallet-42/shares"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value("share-1"))
+                .andExpect(jsonPath("$[0].sourceType").value("SUBSCRIPTION"));
+    }
+
+    @Test
+    void stopWalletShare_returns204AndDelegates() throws Exception {
+        mockMvc.perform(post(WALLETS_PATH + "/wallet-42/shares/share-1/stop"))
+                .andExpect(status().isNoContent());
+
+        verify(stopWalletShareBoundary).execute("wallet-42", "share-1", "legacy");
     }
 }

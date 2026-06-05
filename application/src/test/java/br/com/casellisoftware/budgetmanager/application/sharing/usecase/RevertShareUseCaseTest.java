@@ -73,6 +73,7 @@ class RevertShareUseCaseTest {
                 ShareStatus.ACTIVE,
                 List.of("payment-1", "payment-2"),
                 Instant.parse("2026-05-14T11:00:00Z"),
+                null,
                 null
         );
         Payment ownerPayment = Payment.rebuild(
@@ -135,6 +136,7 @@ class RevertShareUseCaseTest {
                 ShareStatus.ACTIVE,
                 List.of("payment-1"),
                 Instant.parse("2026-05-14T11:00:00Z"),
+                null,
                 null
         );
         Expense hidden = Expense.create("wallet-1", "cc-1", "Notebook", Money.of("100.00"),
@@ -167,6 +169,7 @@ class RevertShareUseCaseTest {
                 ShareStatus.ACTIVE,
                 List.of(),
                 Instant.parse("2026-05-14T11:00:00Z"),
+                null,
                 null
         );
         br.com.casellisoftware.budgetmanager.domain.installment.Installment installment =
@@ -236,6 +239,7 @@ class RevertShareUseCaseTest {
                 ShareStatus.ACTIVE,
                 List.of("payment-missing", "payment-ok"),
                 Instant.parse("2026-05-14T11:00:00Z"),
+                null,
                 null
         );
         Payment validPayment = Payment.rebuild(

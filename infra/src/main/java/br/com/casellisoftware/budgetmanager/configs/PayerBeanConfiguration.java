@@ -29,8 +29,9 @@ public class PayerBeanConfiguration {
 
     @Bean
     public PayerAmountDueCalculator payerAmountDueCalculator(ShareRepository shareRepository,
-                                                             br.com.casellisoftware.budgetmanager.domain.installment.InstallmentRepository installmentRepository) {
-        return new PayerAmountDueCalculator(shareRepository, installmentRepository);
+                                                             br.com.casellisoftware.budgetmanager.domain.installment.InstallmentRepository installmentRepository,
+                                                             Clock clock) {
+        return new PayerAmountDueCalculator(shareRepository, installmentRepository, clock);
     }
 
     @Bean

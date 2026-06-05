@@ -5,6 +5,7 @@ import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -33,6 +34,7 @@ public final class Share {
     private final List<String> paymentIds;
     private final Instant createdAt;
     private final Instant revertedAt;
+    private final YearMonth stoppedFromMonth;
 
     public Share(String id,
                  String ownerId,
@@ -46,7 +48,8 @@ public final class Share {
                  ShareStatus status,
                  List<String> paymentIds,
                  Instant createdAt,
-                 Instant revertedAt) {
+                 Instant revertedAt,
+                 YearMonth stoppedFromMonth) {
         this.id = Objects.requireNonNull(id, "id must not be null");
         this.ownerId = requireNonBlank(ownerId, "ownerId");
         this.walletId = requireNonBlank(walletId, "walletId");
@@ -60,12 +63,16 @@ public final class Share {
         this.paymentIds = normalizePaymentIds(paymentIds);
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt must not be null");
         this.revertedAt = revertedAt;
+        this.stoppedFromMonth = stoppedFromMonth;
 
         validateCurrency();
         validateAmounts();
         validateRatioSum();
         if (this.status == ShareStatus.REVERTED && this.revertedAt == null) {
             throw new IllegalArgumentException("revertedAt must not be null when status is REVERTED");
+        }
+        if (this.stoppedFromMonth != null && this.sourceType == ShareSourceType.EXPENSE) {
+            throw new IllegalArgumentException("stoppedFromMonth is only applicable to recurring sources");
         }
     }
 
@@ -121,6 +128,7 @@ public final class Share {
                 ShareStatus.ACTIVE,
                 List.of(),
                 createdAt,
+                null,
                 null
         );
     }
@@ -167,7 +175,8 @@ public final class Share {
                 this.status,
                 updatedPaymentIds,
                 this.createdAt,
-                this.revertedAt
+                this.revertedAt,
+                this.stoppedFromMonth
         );
     }
 
@@ -189,8 +198,63 @@ public final class Share {
                 ShareStatus.REVERTED,
                 this.paymentIds,
                 this.createdAt,
-                revertedAt
+                revertedAt,
+                this.stoppedFromMonth
         );
+    }
+
+    /**
+     * Stops the share from {@code fromMonth} onward without touching the past.
+     *
+     * <p>Non-destructive (unlike {@link #revert(Instant)}): the share stays
+     * {@link ShareStatus#ACTIVE} and prior months keep settling at the shared
+     * ratio. Read paths gate on {@link #isEffectiveFor(YearMonth)} so wallets at
+     * month {@code >= stoppedFromMonth} stop applying the owner ratio.</p>
+     *
+     * <p>Earliest-wins: re-stopping at an earlier month shrinks the active
+     * window; re-stopping at a later (or equal) month is a no-op.</p>
+     */
+    public Share stopFrom(YearMonth fromMonth) {
+        Objects.requireNonNull(fromMonth, "fromMonth must not be null");
+        if (this.status == ShareStatus.REVERTED) {
+            throw new ShareStopNotApplicableException("cannot stop a reverted share: " + this.id);
+        }
+        if (this.sourceType == ShareSourceType.EXPENSE) {
+            throw new ShareStopNotApplicableException("cannot stop an expense-sourced share: " + this.id);
+        }
+        YearMonth resolved = (this.stoppedFromMonth == null || fromMonth.isBefore(this.stoppedFromMonth))
+                ? fromMonth
+                : this.stoppedFromMonth;
+        if (resolved.equals(this.stoppedFromMonth)) {
+            return this;
+        }
+        return new Share(
+                this.id,
+                this.ownerId,
+                this.walletId,
+                this.sourceType,
+                this.sourceId,
+                this.totalAmount,
+                this.ownerShare,
+                this.ownerRatio,
+                this.quotas,
+                this.status,
+                this.paymentIds,
+                this.createdAt,
+                this.revertedAt,
+                resolved
+        );
+    }
+
+    /**
+     * Whether this share applies its owner ratio for a wallet at {@code walletMonth}.
+     * Single source of truth for the month-forward stop rule — every read path
+     * that consumes the active share MUST gate on this.
+     */
+    public boolean isEffectiveFor(YearMonth walletMonth) {
+        Objects.requireNonNull(walletMonth, "walletMonth must not be null");
+        return status == ShareStatus.ACTIVE
+                && (stoppedFromMonth == null || walletMonth.isBefore(stoppedFromMonth));
     }
 
     public boolean isFullAssignment() {
@@ -247,6 +311,10 @@ public final class Share {
 
     public Instant getRevertedAt() {
         return revertedAt;
+    }
+
+    public YearMonth getStoppedFromMonth() {
+        return stoppedFromMonth;
     }
 
     private static BigDecimal normalizeRatio(BigDecimal ratio) {

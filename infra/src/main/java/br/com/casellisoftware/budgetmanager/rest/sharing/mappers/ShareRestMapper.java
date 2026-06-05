@@ -45,7 +45,8 @@ public class ShareRestMapper {
                 output.quotas().stream().map(this::toQuotaResponse).toList(),
                 output.paymentIds(),
                 output.createdAt(),
-                output.revertedAt()
+                output.revertedAt(),
+                output.stoppedFromMonth()
         );
     }
 

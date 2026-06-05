@@ -24,6 +24,7 @@ import br.com.casellisoftware.budgetmanager.domain.sharing.ShareAlreadyActiveFor
 import br.com.casellisoftware.budgetmanager.domain.sharing.ShareAlreadyRevertedException;
 import br.com.casellisoftware.budgetmanager.domain.sharing.ShareCurrencyMismatchException;
 import br.com.casellisoftware.budgetmanager.domain.sharing.ShareNotFoundException;
+import br.com.casellisoftware.budgetmanager.domain.sharing.ShareStopNotApplicableException;
 import br.com.casellisoftware.budgetmanager.domain.sharing.ShareRatioMismatchException;
 import br.com.casellisoftware.budgetmanager.domain.subscription.exception.SubscriptionAlreadyEndedException;
 import br.com.casellisoftware.budgetmanager.domain.subscription.exception.SubscriptionNotFoundException;
@@ -485,7 +486,8 @@ public class GlobalExceptionHandler {
             SubscriptionAlreadyEndedException.class,
             PayerLifecycleChangeNotAllowedException.class,
             ShareAlreadyRevertedException.class,
-            ShareAlreadyActiveForSourceException.class
+            ShareAlreadyActiveForSourceException.class,
+            ShareStopNotApplicableException.class
     })
     public ResponseEntity<ProblemDetail> handleDomainConflict(RuntimeException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(

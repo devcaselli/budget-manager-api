@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.YearMonth;
 import java.util.List;
 
 @Document("share")
@@ -49,6 +50,7 @@ public class ShareDocument {
     private List<String> paymentIds;
     private Instant createdAt;
     private Instant revertedAt;
+    private YearMonth stoppedFromMonth;
 
     @Version
     private Long version;

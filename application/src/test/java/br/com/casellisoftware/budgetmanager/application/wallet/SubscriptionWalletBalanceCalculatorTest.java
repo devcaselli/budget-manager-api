@@ -118,6 +118,7 @@ class SubscriptionWalletBalanceCalculatorTest {
                         br.com.casellisoftware.budgetmanager.domain.sharing.ShareStatus.ACTIVE,
                         List.of(),
                         java.time.Instant.parse("2026-05-01T00:00:00Z"),
+                        null,
                         null
                 );
         org.mockito.Mockito.when(shareRepository.findActiveBySourceIds(

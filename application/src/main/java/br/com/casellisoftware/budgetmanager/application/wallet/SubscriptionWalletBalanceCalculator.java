@@ -58,7 +58,7 @@ public final class SubscriptionWalletBalanceCalculator {
                                 + " (walletId=" + wallet.getId()
                                 + ", subscriptionId=" + subscription.getId() + ")");
             }
-            total = total.add(applyOwnerRatio(amount, activeShares.get(subscription.getId())));
+            total = total.add(applyOwnerRatio(amount, activeShares.get(subscription.getId()), month));
         }
         return total;
     }
@@ -74,8 +74,8 @@ public final class SubscriptionWalletBalanceCalculator {
         return wallet.getRemaining().amount().subtract(subscriptionTotal.amount());
     }
 
-    private static Money applyOwnerRatio(Money amount, Share activeShare) {
-        if (activeShare == null) {
+    private static Money applyOwnerRatio(Money amount, Share activeShare, YearMonth walletMonth) {
+        if (activeShare == null || !activeShare.isEffectiveFor(walletMonth)) {
             return amount;
         }
         BigDecimal scaled = amount.amount().multiply(activeShare.getOwnerRatio()).setScale(2, RoundingMode.HALF_EVEN);
