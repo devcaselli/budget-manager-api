@@ -42,6 +42,10 @@ public record Money(BigDecimal amount, Currency currency) {
         return of(new BigDecimal(amount));
     }
 
+    public static Money of(String amount, Currency currency) {
+        return of(new BigDecimal(amount), currency);
+    }
+
     public static Money zero() {
         return of(BigDecimal.ZERO);
     }

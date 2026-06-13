@@ -16,6 +16,7 @@ import br.com.casellisoftware.budgetmanager.domain.installment.InvalidStandalone
 import br.com.casellisoftware.budgetmanager.domain.payment.AmountExceedsRemainingException;
 import br.com.casellisoftware.budgetmanager.domain.payment.CurrencyMismatchException;
 import br.com.casellisoftware.budgetmanager.domain.payment.PaymentNotFoundException;
+import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.payment.WalletMismatchException;
 import br.com.casellisoftware.budgetmanager.domain.payer.PayerLifecycleChangeNotAllowedException;
 import br.com.casellisoftware.budgetmanager.domain.payer.PayerNotFoundException;
@@ -328,6 +329,17 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
         problem.setTitle("ExtraBudget not found");
+        problem.setProperty(CORRELATION_ID, newCorrelationId());
+        return problemResponse(HttpStatus.NOT_FOUND, problem);
+    }
+
+    @ExceptionHandler(ReservedBudgetNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleReservedBudgetNotFound(ReservedBudgetNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage()
+        );
+        problem.setTitle("ReservedBudget not found");
         problem.setProperty(CORRELATION_ID, newCorrelationId());
         return problemResponse(HttpStatus.NOT_FOUND, problem);
     }

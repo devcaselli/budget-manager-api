@@ -14,6 +14,7 @@ import br.com.casellisoftware.budgetmanager.application.wallet.usecase.PatchWall
 import br.com.casellisoftware.budgetmanager.application.wallet.usecase.SaveWalletUseCase;
 import br.com.casellisoftware.budgetmanager.configs.transactional.TransactionalSaveWalletBoundary;
 import br.com.casellisoftware.budgetmanager.domain.installment.InstallmentRepository;
+import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetRepository;
 import br.com.casellisoftware.budgetmanager.domain.sharing.ShareRepository;
 import br.com.casellisoftware.budgetmanager.domain.subscription.SubscriptionRepository;
 import br.com.casellisoftware.budgetmanager.domain.wallet.WalletRepository;
@@ -28,11 +29,13 @@ public class WalletBeanConfiguration {
     @Bean
     public WalletDeductionsQuery walletDeductionsQuery(SubscriptionRepository subscriptionRepository,
                                                        InstallmentRepository installmentRepository,
-                                                       ShareRepository shareRepository) {
+                                                       ShareRepository shareRepository,
+                                                       ReservedBudgetRepository reservedBudgetRepository) {
         return new RepositoryBackedWalletDeductionsQuery(
                 subscriptionRepository,
                 installmentRepository,
-                shareRepository);
+                shareRepository,
+                reservedBudgetRepository);
     }
 
     @Bean

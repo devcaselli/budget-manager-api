@@ -4,3 +4,5 @@
 - [No cron for sub charges](feedback_no_cron_for_subs.md) — User rejected scheduled reconciler; sub→wallet materialization must be synchronous, mirroring SaveBulletUseCase
 - [Installments review](installments_review_findings.md) — 2026-05-12: failing E2E, DIP cascade into wallet usecases, 3-write save w/o atomic guarantee, missing Expense↔Installment back-link
 - [Sharing propagation model](sharing_propagation_model.md) — Share ownerRatio is owner-global, applied at read time across wallets (not replicated); stoppedFromMonth design for per-wallet month-forward stop
+- [ReservedBudget review](reservedbudget_review_findings.md) — 2026-06-10 issues all RESOLVED 2026-06-13 (build green, 393 tests)
+- [ReservedBudget amount-version month](reservedbudget_amount_version_month.md) — amount-edit must use caller-supplied effectiveMonth, not now() — owner-confirmed rule
