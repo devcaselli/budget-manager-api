@@ -12,6 +12,7 @@ import java.util.Currency;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -45,6 +46,7 @@ public final class ReservedBudget implements FlagAware {
     private final Currency currency;
     private final YearMonth startMonth;
     private final List<ReservedBudgetVersion> versions;
+    private final List<ReservedBudgetLink> links;
     private final boolean deleted;
     private final LocalDateTime deletedAt;
     private final FlagEnum flag;
@@ -56,6 +58,7 @@ public final class ReservedBudget implements FlagAware {
                            Currency currency,
                            YearMonth startMonth,
                            List<ReservedBudgetVersion> versions,
+                           List<ReservedBudgetLink> links,
                            boolean deleted,
                            LocalDateTime deletedAt,
                            FlagEnum flag) {
@@ -68,6 +71,8 @@ public final class ReservedBudget implements FlagAware {
         this.versions = normalizeVersions(versions);
         validateVersionTimeline(this.startMonth, this.versions);
         validateVersionCurrencies(this.currency, this.versions);
+        this.links = normalizeLinks(links);
+        validateLinksFromMonth(this.startMonth, this.links);
         this.deleted = deleted;
         this.deletedAt = deletedAt;
         this.flag = flag == null ? FlagEnum.NONE : flag;
@@ -91,6 +96,7 @@ public final class ReservedBudget implements FlagAware {
                 currency,
                 startMonth,
                 List.of(initialVersion),
+                List.of(),
                 false,
                 null,
                 flag
@@ -104,10 +110,11 @@ public final class ReservedBudget implements FlagAware {
                                          Currency currency,
                                          YearMonth startMonth,
                                          List<ReservedBudgetVersion> versions,
+                                         List<ReservedBudgetLink> links,
                                          boolean deleted,
                                          LocalDateTime deletedAt,
                                          FlagEnum flag) {
-        return new ReservedBudget(id, ownerId, description, details, currency, startMonth, versions, deleted, deletedAt, flag);
+        return new ReservedBudget(id, ownerId, description, details, currency, startMonth, versions, links, deleted, deletedAt, flag);
     }
 
     public ReservedBudget rename(String description) {
@@ -115,7 +122,7 @@ public final class ReservedBudget implements FlagAware {
         if (Objects.equals(this.description, renamed)) {
             return this;
         }
-        return new ReservedBudget(this.id, this.ownerId, renamed, this.details, this.currency, this.startMonth, this.versions, this.deleted, this.deletedAt, this.flag);
+        return new ReservedBudget(this.id, this.ownerId, renamed, this.details, this.currency, this.startMonth, this.versions, this.links, this.deleted, this.deletedAt, this.flag);
     }
 
     public ReservedBudget withDetails(String details) {
@@ -123,7 +130,7 @@ public final class ReservedBudget implements FlagAware {
         if (Objects.equals(this.details, normalized)) {
             return this;
         }
-        return new ReservedBudget(this.id, this.ownerId, this.description, normalized, this.currency, this.startMonth, this.versions, this.deleted, this.deletedAt, this.flag);
+        return new ReservedBudget(this.id, this.ownerId, this.description, normalized, this.currency, this.startMonth, this.versions, this.links, this.deleted, this.deletedAt, this.flag);
     }
 
     /**
@@ -153,7 +160,7 @@ public final class ReservedBudget implements FlagAware {
                 .collect(Collectors.toCollection(ArrayList::new));
         updatedVersions.add(newVersion);
 
-        return new ReservedBudget(this.id, this.ownerId, this.description, this.details, this.currency, this.startMonth, updatedVersions, this.deleted, this.deletedAt, this.flag);
+        return new ReservedBudget(this.id, this.ownerId, this.description, this.details, this.currency, this.startMonth, updatedVersions, this.links, this.deleted, this.deletedAt, this.flag);
     }
 
     /**
@@ -169,7 +176,7 @@ public final class ReservedBudget implements FlagAware {
 
         ReservedBudget patched = this;
         if (patch.flag().isPresent() && !Objects.equals(this.flag, patch.flag().get())) {
-            patched = new ReservedBudget(this.id, this.ownerId, this.description, this.details, this.currency, this.startMonth, this.versions, this.deleted, this.deletedAt, patch.flag().get());
+            patched = new ReservedBudget(this.id, this.ownerId, this.description, this.details, this.currency, this.startMonth, this.versions, this.links, this.deleted, this.deletedAt, patch.flag().get());
         }
         if (patch.description().isPresent()) {
             patched = patched.rename(patch.description().get());
@@ -192,7 +199,7 @@ public final class ReservedBudget implements FlagAware {
         if (this.deleted) {
             return this;
         }
-        return new ReservedBudget(this.id, this.ownerId, this.description, this.details, this.currency, this.startMonth, this.versions, true, now, this.flag);
+        return new ReservedBudget(this.id, this.ownerId, this.description, this.details, this.currency, this.startMonth, this.versions, this.links, true, now, this.flag);
     }
 
     /**
@@ -244,6 +251,58 @@ public final class ReservedBudget implements FlagAware {
 
     public List<ReservedBudgetVersion> getVersions() {
         return versions;
+    }
+
+    public List<ReservedBudgetLink> getLinks() {
+        return links;
+    }
+
+    /**
+     * Returns the link for the given {@code (sourceType, sourceId)} pair, if present.
+     */
+    public Optional<ReservedBudgetLink> findLink(ReservedBudgetLinkSourceType sourceType, String sourceId) {
+        Objects.requireNonNull(sourceType, "sourceType must not be null");
+        Objects.requireNonNull(sourceId, "sourceId must not be null");
+        return links.stream()
+                .filter(l -> l.sourceType() == sourceType && l.sourceId().equals(sourceId))
+                .findFirst();
+    }
+
+    /**
+     * Returns a new {@link ReservedBudget} with the given link added or replaced (same key =
+     * same {@code sourceType + sourceId}).
+     *
+     * <p>Invariant: {@code link.fromMonth()} must not be before {@link #startMonth}.</p>
+     */
+    public ReservedBudget addLink(ReservedBudgetLink link) {
+        Objects.requireNonNull(link, "link must not be null");
+        if (link.fromMonth().isBefore(this.startMonth)) {
+            throw new IllegalArgumentException(
+                    "link.fromMonth must not be before startMonth: " + link.fromMonth() + " < " + this.startMonth);
+        }
+        List<ReservedBudgetLink> updated = this.links.stream()
+                .filter(l -> !(l.sourceType() == link.sourceType() && l.sourceId().equals(link.sourceId())))
+                .collect(Collectors.toCollection(ArrayList::new));
+        updated.add(link);
+        return new ReservedBudget(this.id, this.ownerId, this.description, this.details, this.currency,
+                this.startMonth, this.versions, updated, this.deleted, this.deletedAt, this.flag);
+    }
+
+    /**
+     * Returns a new {@link ReservedBudget} with the link for {@code (sourceType, sourceId)} removed.
+     * No-op if the link does not exist.
+     */
+    public ReservedBudget removeLink(ReservedBudgetLinkSourceType sourceType, String sourceId) {
+        Objects.requireNonNull(sourceType, "sourceType must not be null");
+        Objects.requireNonNull(sourceId, "sourceId must not be null");
+        List<ReservedBudgetLink> updated = this.links.stream()
+                .filter(l -> !(l.sourceType() == sourceType && l.sourceId().equals(sourceId)))
+                .toList();
+        if (updated.size() == this.links.size()) {
+            return this;
+        }
+        return new ReservedBudget(this.id, this.ownerId, this.description, this.details, this.currency,
+                this.startMonth, this.versions, updated, this.deleted, this.deletedAt, this.flag);
     }
 
     public boolean isDeleted() {
@@ -333,6 +392,42 @@ public final class ReservedBudget implements FlagAware {
             throw new IllegalArgumentException(
                     "version currency must match reserved-budget currency: "
                             + version.amount().currency() + " vs " + currency);
+        }
+    }
+
+    /**
+     * Normalizes the links list: null → empty, rejects duplicate {@code (sourceType, sourceId)}
+     * pairs, and produces a stable ordering (by sourceType then sourceId).
+     */
+    private static List<ReservedBudgetLink> normalizeLinks(List<ReservedBudgetLink> links) {
+        if (links == null) {
+            return List.of();
+        }
+        Set<String> seen = new HashSet<>();
+        for (ReservedBudgetLink link : links) {
+            Objects.requireNonNull(link, "link must not be null");
+            String key = link.sourceType().name() + ":" + link.sourceId();
+            if (!seen.add(key)) {
+                throw new IllegalArgumentException(
+                        "links must not contain duplicate (sourceType, sourceId): " + key);
+            }
+        }
+        return links.stream()
+                .sorted(Comparator.comparing((ReservedBudgetLink l) -> l.sourceType().name())
+                        .thenComparing(ReservedBudgetLink::sourceId))
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    /**
+     * Validates that all link {@code fromMonth} values are not before {@code startMonth}.
+     */
+    private static void validateLinksFromMonth(YearMonth startMonth, List<ReservedBudgetLink> links) {
+        for (ReservedBudgetLink link : links) {
+            if (link.fromMonth().isBefore(startMonth)) {
+                throw new IllegalArgumentException(
+                        "link.fromMonth must not be before startMonth: "
+                                + link.fromMonth() + " < " + startMonth);
+            }
         }
     }
 }

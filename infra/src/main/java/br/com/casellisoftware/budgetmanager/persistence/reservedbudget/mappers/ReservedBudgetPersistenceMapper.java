@@ -63,6 +63,7 @@ public interface ReservedBudgetPersistenceMapper {
                 currency,
                 document.getStartMonth(),
                 versions,
+                List.of(), // links hydrated in T5 (ReservedBudgetLinkDocument)
                 document.isDeleted(),
                 document.getDeletedAt(),
                 document.getFlag() == null ? FlagEnum.NONE : document.getFlag()

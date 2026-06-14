@@ -3,6 +3,7 @@ package br.com.casellisoftware.budgetmanager.domain.reservedbudget;
 import br.com.casellisoftware.budgetmanager.domain.flag.FlagEnum;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import org.junit.jupiter.api.Test;
+import java.util.Optional;
 
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -169,6 +170,7 @@ class ReservedBudgetTest {
                         new ReservedBudgetVersion(MARCH, Money.of("2000.00", BRL)),
                         new ReservedBudgetVersion(AUGUST, Money.of("1500.00", BRL))
                 ),
+                List.of(),
                 false,
                 null,
                 FlagEnum.NONE
@@ -178,12 +180,143 @@ class ReservedBudgetTest {
         assertThat(rb.resolveAmount(AUGUST)).isEqualTo(Money.of("1500.00", BRL));
     }
 
+    // ── ReservedBudgetLink ──────────────────────────────────────────────────
+
+    @Test
+    void link_isApplicable_trueFromFromMonthOnward() {
+        ReservedBudgetLink link = new ReservedBudgetLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "sub-1", MARCH);
+        assertThat(link.isApplicable(YearMonth.of(2025, 2))).isFalse();
+        assertThat(link.isApplicable(MARCH)).isTrue();
+        assertThat(link.isApplicable(AUGUST)).isTrue();
+    }
+
+    @Test
+    void link_nullSourceType_throws() {
+        assertThatThrownBy(() -> new ReservedBudgetLink(null, "sub-1", MARCH))
+                .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    void link_blankSourceId_throws() {
+        assertThatThrownBy(() -> new ReservedBudgetLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, " ", MARCH))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("sourceId");
+    }
+
+    @Test
+    void link_nullFromMonth_throws() {
+        assertThatThrownBy(() -> new ReservedBudgetLink(ReservedBudgetLinkSourceType.INSTALLMENT, "inst-1", null))
+                .isInstanceOf(NullPointerException.class);
+    }
+
+    // ── addLink / removeLink / findLink ────────────────────────────────────
+
+    @Test
+    void addLink_addsLinkToAggregate() {
+        ReservedBudget rb = aluguel();
+        ReservedBudgetLink link = new ReservedBudgetLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "sub-1", MARCH);
+
+        ReservedBudget withLink = rb.addLink(link);
+
+        assertThat(withLink.getLinks()).hasSize(1);
+        assertThat(withLink.getLinks().getFirst()).isEqualTo(link);
+    }
+
+    @Test
+    void addLink_sameKey_replacesExisting() {
+        ReservedBudgetLink linkMarch = new ReservedBudgetLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "sub-1", MARCH);
+        ReservedBudgetLink linkAugust = new ReservedBudgetLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "sub-1", AUGUST);
+
+        ReservedBudget rb = aluguel().addLink(linkMarch).addLink(linkAugust);
+
+        assertThat(rb.getLinks()).hasSize(1);
+        assertThat(rb.getLinks().getFirst().fromMonth()).isEqualTo(AUGUST);
+    }
+
+    @Test
+    void addLink_differentKeys_bothPresent() {
+        ReservedBudget rb = aluguel()
+                .addLink(new ReservedBudgetLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "sub-1", MARCH))
+                .addLink(new ReservedBudgetLink(ReservedBudgetLinkSourceType.INSTALLMENT, "inst-1", MARCH));
+
+        assertThat(rb.getLinks()).hasSize(2);
+    }
+
+    @Test
+    void addLink_fromMonthBeforeStartMonth_throws() {
+        YearMonth beforeStart = YearMonth.of(2025, 2);
+        ReservedBudgetLink link = new ReservedBudgetLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "sub-1", beforeStart);
+
+        assertThatThrownBy(() -> aluguel().addLink(link))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("startMonth");
+    }
+
+    @Test
+    void removeLink_removesMatchingLink() {
+        ReservedBudget rb = aluguel()
+                .addLink(new ReservedBudgetLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "sub-1", MARCH))
+                .addLink(new ReservedBudgetLink(ReservedBudgetLinkSourceType.INSTALLMENT, "inst-1", MARCH));
+
+        ReservedBudget removed = rb.removeLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "sub-1");
+
+        assertThat(removed.getLinks()).hasSize(1);
+        assertThat(removed.getLinks().getFirst().sourceId()).isEqualTo("inst-1");
+    }
+
+    @Test
+    void removeLink_nonExistentLink_returnsSameInstance() {
+        ReservedBudget rb = aluguel();
+        ReservedBudget same = rb.removeLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "not-there");
+        assertThat(same).isSameAs(rb);
+    }
+
+    @Test
+    void findLink_returnsLinkIfPresent() {
+        ReservedBudgetLink link = new ReservedBudgetLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "sub-1", MARCH);
+        ReservedBudget rb = aluguel().addLink(link);
+
+        assertThat(rb.findLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "sub-1")).contains(link);
+        assertThat(rb.findLink(ReservedBudgetLinkSourceType.INSTALLMENT, "sub-1")).isEmpty();
+        assertThat(rb.findLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "other")).isEmpty();
+    }
+
+    @Test
+    void normalizeLinks_duplicateKey_throws() {
+        ReservedBudgetLink l1 = new ReservedBudgetLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "sub-1", MARCH);
+        ReservedBudgetLink l2 = new ReservedBudgetLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "sub-1", AUGUST);
+
+        assertThatThrownBy(() -> ReservedBudget.rebuild(
+                "rb-1", "owner-1", "Aluguel", null, BRL, MARCH,
+                List.of(new ReservedBudgetVersion(MARCH, Money.of("2000.00", BRL))),
+                List.of(l1, l2),
+                false, null, FlagEnum.NONE))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("duplicate");
+    }
+
+    @Test
+    void links_preservedAcrossMutators() {
+        ReservedBudgetLink link = new ReservedBudgetLink(ReservedBudgetLinkSourceType.SUBSCRIPTION, "sub-1", MARCH);
+        ReservedBudget rb = aluguel().addLink(link);
+
+        assertThat(rb.rename("Outro").getLinks()).containsExactly(link);
+        assertThat(rb.withDetails("detail").getLinks()).containsExactly(link);
+        assertThat(rb.addVersion(AUGUST, Money.of("1500.00", BRL)).getLinks()).containsExactly(link);
+        assertThat(rb.markDeleted(LocalDateTime.now()).getLinks()).containsExactly(link);
+    }
+
+    @Test
+    void create_initializesWithEmptyLinks() {
+        assertThat(aluguel().getLinks()).isEmpty();
+    }
+
     @Test
     void equalsAndHashCode_basedOnIdAndOwner() {
         ReservedBudget a = ReservedBudget.rebuild("rb-1", "owner-1", "A", null, BRL, MARCH,
-                List.of(new ReservedBudgetVersion(MARCH, Money.of("2000.00", BRL))), false, null, FlagEnum.NONE);
+                List.of(new ReservedBudgetVersion(MARCH, Money.of("2000.00", BRL))), List.of(), false, null, FlagEnum.NONE);
         ReservedBudget b = ReservedBudget.rebuild("rb-1", "owner-1", "Different desc", "x", BRL, MARCH,
-                List.of(new ReservedBudgetVersion(MARCH, Money.of("9999.00", BRL))), true, LocalDateTime.now(), FlagEnum.NONE);
+                List.of(new ReservedBudgetVersion(MARCH, Money.of("9999.00", BRL))), List.of(), true, LocalDateTime.now(), FlagEnum.NONE);
 
         assertThat(a).isEqualTo(b);
         assertThat(a.hashCode()).isEqualTo(b.hashCode());
