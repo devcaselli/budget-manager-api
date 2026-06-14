@@ -3,7 +3,9 @@ package br.com.casellisoftware.budgetmanager.domain.subscription;
 import br.com.casellisoftware.budgetmanager.domain.shared.PageResult;
 
 import java.time.YearMonth;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface SubscriptionRepository {
@@ -36,6 +38,17 @@ public interface SubscriptionRepository {
     default void deleteById(String id, String ownerId) {
         findById(id, ownerId).ifPresent(subscription -> deleteById(id));
     }
+
+    /**
+     * Batch lookup of subscriptions by their ids, scoped to {@code ownerId}.
+     * Returns a map keyed by {@link Subscription#getId()} so callers can resolve
+     * each id in O(1). Mirrors {@link br.com.casellisoftware.budgetmanager.domain.installment.InstallmentRepository#findAllByIds}.
+     *
+     * @param ids     the subscription ids to fetch; empty collection returns empty map
+     * @param ownerId owner scope
+     * @return map of id → Subscription; ids not found or not owned are absent
+     */
+    Map<String, Subscription> findAllByIds(Collection<String> ids, String ownerId);
 
     /**
      * Returns {@code true} if there is at least one non-ended subscription

@@ -37,4 +37,16 @@ public interface ReservedBudgetRepository {
     List<ReservedBudget> findActiveForAny(List<YearMonth> months, String ownerId);
 
     PageResult<ReservedBudget> findAll(int page, int size, String ownerId);
+
+    /**
+     * Returns the non-deleted reserved budget that has a link with the given
+     * {@code (sourceType, sourceId)}, scoped to {@code ownerId}.
+     *
+     * <p>Returns {@link Optional#empty()} if no such link exists. Used by
+     * {@code LinkReservedBudgetSourceUseCase} to enforce the 1-item → at-most-1-RB
+     * cardinality invariant (rule 3).</p>
+     */
+    Optional<ReservedBudget> findByLinkedSource(ReservedBudgetLinkSourceType sourceType,
+                                                String sourceId,
+                                                String ownerId);
 }

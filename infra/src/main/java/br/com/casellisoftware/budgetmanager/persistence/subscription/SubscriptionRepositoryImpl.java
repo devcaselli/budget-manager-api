@@ -12,9 +12,12 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Clock;
 import java.time.YearMonth;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -91,6 +94,19 @@ public class SubscriptionRepositoryImpl implements SubscriptionRepository {
                 .stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public Map<String, Subscription> findAllByIds(Collection<String> ids, String ownerId) {
+        Objects.requireNonNull(ids, "ids must not be null");
+        Objects.requireNonNull(ownerId, "ownerId must not be null");
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+        return subscriptionMongoRepository.findAllByIdInAndOwnerId(ids, ownerId)
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toMap(Subscription::getId, s -> s));
     }
 
     @Override

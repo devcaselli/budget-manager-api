@@ -3,7 +3,9 @@ package br.com.casellisoftware.budgetmanager.domain.subscription;
 import br.com.casellisoftware.budgetmanager.domain.shared.PageResult;
 
 import java.time.YearMonth;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -54,6 +56,11 @@ public final class NoSubscriptionRepository implements SubscriptionRepository {
     @Override
     public void deleteById(String id) {
         throw new UnsupportedOperationException("read-only null object");
+    }
+
+    @Override
+    public Map<String, Subscription> findAllByIds(Collection<String> ids, String ownerId) {
+        return Map.of();
     }
 
     @Override

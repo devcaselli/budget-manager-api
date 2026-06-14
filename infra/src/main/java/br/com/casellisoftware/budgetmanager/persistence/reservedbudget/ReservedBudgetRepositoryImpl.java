@@ -1,6 +1,7 @@
 package br.com.casellisoftware.budgetmanager.persistence.reservedbudget;
 
 import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudget;
+import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLinkSourceType;
 import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetRepository;
 import br.com.casellisoftware.budgetmanager.domain.shared.PageResult;
 import br.com.casellisoftware.budgetmanager.persistence.reservedbudget.mappers.ReservedBudgetPersistenceMapper;
@@ -64,6 +65,21 @@ public class ReservedBudgetRepositoryImpl implements ReservedBudgetRepository {
         // startMonth <= max(months). Callers filter per-month via ReservedBudget.isApplicable.
         YearMonth maxMonth = months.stream().max(YearMonth::compareTo).orElseThrow();
         return findActiveFor(maxMonth, ownerId);
+    }
+
+    /**
+     * Implemented in T5 (ReservedBudgetLinkDocument + Mongo index on links).
+     * Stub returns empty until T5 wires the real {@code @Query $elemMatch} query.
+     *
+     * @implNote Will be replaced in T5 with:
+     *   {@code reservedBudgetMongoRepository.findByLinkedSource(sourceType.name(), sourceId, ownerId)}
+     */
+    @Override
+    public Optional<ReservedBudget> findByLinkedSource(ReservedBudgetLinkSourceType sourceType,
+                                                       String sourceId,
+                                                       String ownerId) {
+        // T5: replace with real Mongo query
+        return Optional.empty();
     }
 
     @Override
