@@ -12,6 +12,7 @@ public record ReservedBudgetResponseDto(
         String currency,
         YearMonth startMonth,
         List<ReservedBudgetVersionResponseDto> versions,
+        List<ReservedBudgetLinkResponseDto> links,
         boolean deleted,
         FlagEnum flag
 ) {

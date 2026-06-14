@@ -80,6 +80,12 @@ class ReservedBudgetControllerTest {
     private FindActiveReservedBudgetsByMonthBoundary findActiveReservedBudgetsByMonthBoundary;
 
     @MockitoBean
+    private br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.LinkReservedBudgetSourceBoundary linkReservedBudgetSourceBoundary;
+
+    @MockitoBean
+    private br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.UnlinkReservedBudgetSourceBoundary unlinkReservedBudgetSourceBoundary;
+
+    @MockitoBean
     private ReservedBudgetRestMapper mapper;
 
     @Test
@@ -210,6 +216,7 @@ class ReservedBudgetControllerTest {
                 "BRL",
                 YearMonth.of(2025, 3),
                 List.of(new ReservedBudgetVersionOutput(YearMonth.of(2025, 3), new BigDecimal("2000.00"))),
+                List.of(),
                 false,
                 FlagEnum.NONE
         );
@@ -223,6 +230,7 @@ class ReservedBudgetControllerTest {
                 "BRL",
                 YearMonth.of(2025, 3),
                 List.of(new ReservedBudgetVersionResponseDto(YearMonth.of(2025, 3), new BigDecimal("2000.00"))),
+                List.of(),
                 false,
                 FlagEnum.NONE
         );

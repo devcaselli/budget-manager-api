@@ -1,6 +1,7 @@
 package br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary;
 
 import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudget;
+import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLink;
 import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetVersion;
 
 public final class ReservedBudgetOutputAssembler {
@@ -18,6 +19,9 @@ public final class ReservedBudgetOutputAssembler {
                 reservedBudget.getVersions().stream()
                         .map(ReservedBudgetOutputAssembler::fromVersion)
                         .toList(),
+                reservedBudget.getLinks().stream()
+                        .map(ReservedBudgetOutputAssembler::fromLink)
+                        .toList(),
                 reservedBudget.isDeleted(),
                 reservedBudget.getFlag()
         );
@@ -27,6 +31,14 @@ public final class ReservedBudgetOutputAssembler {
         return new ReservedBudgetVersionOutput(
                 version.effectiveMonth(),
                 version.amount().amount()
+        );
+    }
+
+    private static ReservedBudgetLinkOutput fromLink(ReservedBudgetLink link) {
+        return new ReservedBudgetLinkOutput(
+                link.sourceType(),
+                link.sourceId(),
+                link.fromMonth()
         );
     }
 }

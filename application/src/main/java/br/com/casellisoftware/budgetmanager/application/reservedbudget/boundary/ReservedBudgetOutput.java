@@ -12,6 +12,7 @@ public record ReservedBudgetOutput(
         String currency,
         YearMonth startMonth,
         List<ReservedBudgetVersionOutput> versions,
+        List<ReservedBudgetLinkOutput> links,
         boolean deleted,
         FlagEnum flag
 ) {

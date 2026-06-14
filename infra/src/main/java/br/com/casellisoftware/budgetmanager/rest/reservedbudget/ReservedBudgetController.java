@@ -4,12 +4,17 @@ import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.FindActiveReservedBudgetsByMonthBoundary;
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.FindAllReservedBudgetsBoundary;
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.FindReservedBudgetByIdBoundary;
+import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.LinkReservedBudgetSourceBoundary;
+import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.LinkReservedBudgetSourceInput;
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.PatchReservedBudgetBoundary;
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.ReservedBudgetOutput;
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.SaveReservedBudgetBoundary;
+import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.UnlinkReservedBudgetSourceBoundary;
+import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.UnlinkReservedBudgetSourceInput;
 import br.com.casellisoftware.budgetmanager.application.shared.AuthenticatedUser;
 import br.com.casellisoftware.budgetmanager.domain.shared.PageResult;
 import br.com.casellisoftware.budgetmanager.rest.reservedbudget.dtos.PagedReservedBudgetResponseDto;
+import br.com.casellisoftware.budgetmanager.rest.reservedbudget.dtos.ReservedBudgetLinkRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.reservedbudget.dtos.ReservedBudgetPatchRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.reservedbudget.dtos.ReservedBudgetRequestDto;
 import br.com.casellisoftware.budgetmanager.rest.reservedbudget.dtos.ReservedBudgetResponseDto;
@@ -48,6 +53,8 @@ public class ReservedBudgetController {
     private final FindReservedBudgetByIdBoundary findReservedBudgetByIdBoundary;
     private final FindAllReservedBudgetsBoundary findAllReservedBudgetsBoundary;
     private final FindActiveReservedBudgetsByMonthBoundary findActiveReservedBudgetsByMonthBoundary;
+    private final LinkReservedBudgetSourceBoundary linkReservedBudgetSourceBoundary;
+    private final UnlinkReservedBudgetSourceBoundary unlinkReservedBudgetSourceBoundary;
     private final ReservedBudgetRestMapper mapper;
 
     @PostMapping
@@ -106,5 +113,48 @@ public class ReservedBudgetController {
         PageResult<ReservedBudgetOutput> reservedBudgets = findAllReservedBudgetsBoundary
                 .execute(page, size, authenticatedUser.ownerId());
         return ResponseEntity.ok(mapper.toPagedResponse(reservedBudgets));
+    }
+
+    /**
+     * Links a subscription or installment to this reserved budget.
+     *
+     * <p>Idempotent for the same (reservedBudgetId, sourceType, sourceId) triple — re-linking
+     * to the same RB replaces the existing link (e.g. to change {@code fromMonth}).</p>
+     *
+     * @return 200 OK with the updated reserved budget
+     */
+    @PostMapping("/{id}/links")
+    public ResponseEntity<ReservedBudgetResponseDto> link(@PathVariable String id,
+                                                          @Valid @RequestBody ReservedBudgetLinkRequestDto request,
+                                                          AuthenticatedUser authenticatedUser) {
+        LinkReservedBudgetSourceInput input = new LinkReservedBudgetSourceInput(
+                id,
+                request.sourceType(),
+                request.sourceId(),
+                request.fromMonth(),
+                authenticatedUser.ownerId()
+        );
+        ReservedBudgetOutput output = linkReservedBudgetSourceBoundary.execute(input);
+        return ResponseEntity.ok(mapper.toResponse(output));
+    }
+
+    /**
+     * Removes the link between a subscription/installment and this reserved budget.
+     *
+     * @return 200 OK with the updated reserved budget (link removed)
+     */
+    @DeleteMapping("/{id}/links/{sourceType}/{sourceId}")
+    public ResponseEntity<ReservedBudgetResponseDto> unlink(@PathVariable String id,
+                                                            @PathVariable String sourceType,
+                                                            @PathVariable String sourceId,
+                                                            AuthenticatedUser authenticatedUser) {
+        UnlinkReservedBudgetSourceInput input = new UnlinkReservedBudgetSourceInput(
+                id,
+                br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLinkSourceType.valueOf(sourceType.toUpperCase()),
+                sourceId,
+                authenticatedUser.ownerId()
+        );
+        ReservedBudgetOutput output = unlinkReservedBudgetSourceBoundary.execute(input);
+        return ResponseEntity.ok(mapper.toResponse(output));
     }
 }

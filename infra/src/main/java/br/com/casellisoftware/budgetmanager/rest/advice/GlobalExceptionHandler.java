@@ -511,6 +511,48 @@ public class GlobalExceptionHandler {
         return problemResponse(HttpStatus.CONFLICT, problem);
     }
 
+    @ExceptionHandler(br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLinkConflictException.class)
+    public ResponseEntity<ProblemDetail> handleReservedBudgetLinkConflict(
+            br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLinkConflictException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                ex.getMessage()
+        );
+        problem.setTitle("Source already linked to another reserved budget");
+        problem.setProperty(CORRELATION_ID, newCorrelationId());
+        problem.setProperty("sourceType", ex.getSourceType().name());
+        problem.setProperty("sourceId", ex.getSourceId());
+        problem.setProperty("conflictingReservedBudgetId", ex.getConflictingReservedBudgetId());
+        return problemResponse(HttpStatus.CONFLICT, problem);
+    }
+
+    @ExceptionHandler(br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLinkCapExceededException.class)
+    public ResponseEntity<ProblemDetail> handleReservedBudgetLinkCapExceeded(
+            br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLinkCapExceededException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                ex.getMessage()
+        );
+        problem.setTitle("Reserved budget cap exceeded by linked items");
+        problem.setProperty(CORRELATION_ID, newCorrelationId());
+        problem.setProperty("month", ex.getMonth().toString());
+        problem.setProperty("sum", ex.getSum().amount());
+        problem.setProperty("ceiling", ex.getCeiling().amount());
+        return problemResponse(HttpStatus.UNPROCESSABLE_ENTITY, problem);
+    }
+
+    @ExceptionHandler(br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLinkNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleReservedBudgetLinkNotFound(
+            br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLinkNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage()
+        );
+        problem.setTitle("Reserved budget link not found");
+        problem.setProperty(CORRELATION_ID, newCorrelationId());
+        return problemResponse(HttpStatus.NOT_FOUND, problem);
+    }
+
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<ProblemDetail> handleDataAccess(DataAccessException ex) {
         String correlationId = newCorrelationId();
