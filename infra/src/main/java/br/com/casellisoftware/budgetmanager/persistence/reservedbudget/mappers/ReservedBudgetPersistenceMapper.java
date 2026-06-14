@@ -3,9 +3,12 @@ package br.com.casellisoftware.budgetmanager.persistence.reservedbudget.mappers;
 import br.com.casellisoftware.budgetmanager.configs.mapstruct.ProjectMapper;
 import br.com.casellisoftware.budgetmanager.domain.flag.FlagEnum;
 import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudget;
+import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLink;
+import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLinkSourceType;
 import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetVersion;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.persistence.reservedbudget.ReservedBudgetDocument;
+import br.com.casellisoftware.budgetmanager.persistence.reservedbudget.ReservedBudgetLinkDocument;
 import br.com.casellisoftware.budgetmanager.persistence.reservedbudget.ReservedBudgetVersionDocument;
 import org.mapstruct.Mapper;
 
@@ -29,6 +32,11 @@ public interface ReservedBudgetPersistenceMapper {
                 .map(this::toDocument)
                 .toList();
 
+        List<ReservedBudgetLinkDocument> links = reservedBudget.getLinks()
+                .stream()
+                .map(this::toDocument)
+                .toList();
+
         return new ReservedBudgetDocument(
                 reservedBudget.getId(),
                 reservedBudget.getOwnerId(),
@@ -40,7 +48,8 @@ public interface ReservedBudgetPersistenceMapper {
                 reservedBudget.getStartMonth(),
                 reservedBudget.isDeleted(),
                 reservedBudget.getDeletedAt(),
-                versions
+                versions,
+                links
         );
     }
 
@@ -55,6 +64,12 @@ public interface ReservedBudgetPersistenceMapper {
                 .map(version -> toDomain(version, currency))
                 .toList();
 
+        List<ReservedBudgetLink> links = (document.getLinks() == null)
+                ? List.of()
+                : document.getLinks().stream()
+                        .map(this::toDomain)
+                        .toList();
+
         return ReservedBudget.rebuild(
                 document.getId(),
                 document.getOwnerId() == null ? ReservedBudget.LEGACY_OWNER_ID : document.getOwnerId(),
@@ -63,7 +78,7 @@ public interface ReservedBudgetPersistenceMapper {
                 currency,
                 document.getStartMonth(),
                 versions,
-                List.of(), // links hydrated in T5 (ReservedBudgetLinkDocument)
+                links,
                 document.isDeleted(),
                 document.getDeletedAt(),
                 document.getFlag() == null ? FlagEnum.NONE : document.getFlag()
@@ -84,6 +99,24 @@ public interface ReservedBudgetPersistenceMapper {
         return new ReservedBudgetVersion(
                 document.getEffectiveMonth(),
                 Money.of(document.getAmount(), currency)
+        );
+    }
+
+    default ReservedBudgetLinkDocument toDocument(ReservedBudgetLink link) {
+        if (link == null) {
+            return null;
+        }
+        return new ReservedBudgetLinkDocument(link.sourceType().name(), link.sourceId(), link.fromMonth());
+    }
+
+    default ReservedBudgetLink toDomain(ReservedBudgetLinkDocument document) {
+        if (document == null) {
+            return null;
+        }
+        return new ReservedBudgetLink(
+                ReservedBudgetLinkSourceType.valueOf(document.getSourceType()),
+                document.getSourceId(),
+                document.getFromMonth()
         );
     }
 

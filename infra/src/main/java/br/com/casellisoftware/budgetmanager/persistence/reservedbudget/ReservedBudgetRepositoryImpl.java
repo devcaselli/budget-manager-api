@@ -67,19 +67,16 @@ public class ReservedBudgetRepositoryImpl implements ReservedBudgetRepository {
         return findActiveFor(maxMonth, ownerId);
     }
 
-    /**
-     * Implemented in T5 (ReservedBudgetLinkDocument + Mongo index on links).
-     * Stub returns empty until T5 wires the real {@code @Query $elemMatch} query.
-     *
-     * @implNote Will be replaced in T5 with:
-     *   {@code reservedBudgetMongoRepository.findByLinkedSource(sourceType.name(), sourceId, ownerId)}
-     */
     @Override
     public Optional<ReservedBudget> findByLinkedSource(ReservedBudgetLinkSourceType sourceType,
                                                        String sourceId,
                                                        String ownerId) {
-        // T5: replace with real Mongo query
-        return Optional.empty();
+        Objects.requireNonNull(sourceType, "sourceType must not be null");
+        Objects.requireNonNull(sourceId, "sourceId must not be null");
+        Objects.requireNonNull(ownerId, "ownerId must not be null");
+        return reservedBudgetMongoRepository
+                .findByLinkedSource(sourceType.name(), sourceId, ownerId)
+                .map(mapper::toDomain);
     }
 
     @Override

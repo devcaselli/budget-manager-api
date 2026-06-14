@@ -17,4 +17,18 @@ public interface ReservedBudgetMongoRepository extends MongoRepository<ReservedB
 
     @Query("{ '$and': [ { 'ownerId': ?0 }, { 'deleted': { '$ne': true } } ] }")
     Page<ReservedBudgetDocument> findAllByOwnerId(String ownerId, Pageable pageable);
+
+    /**
+     * Cardinality check for the Vínculos feature: finds the reserved budget (if any)
+     * whose {@code links} array contains an entry matching the given source.
+     *
+     * <p>Uses {@code $elemMatch} for correct multikey-index semantics — without it a
+     * compound index query could match across different array elements.</p>
+     *
+     * @param sourceType string name of {@link br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLinkSourceType}
+     * @param sourceId   the linked item's ID
+     * @param ownerId    owner filter (isolates tenants)
+     */
+    @Query("{ 'ownerId': ?2, 'deleted': { '$ne': true }, 'links': { '$elemMatch': { 'sourceType': ?0, 'sourceId': ?1 } } }")
+    Optional<ReservedBudgetDocument> findByLinkedSource(String sourceType, String sourceId, String ownerId);
 }

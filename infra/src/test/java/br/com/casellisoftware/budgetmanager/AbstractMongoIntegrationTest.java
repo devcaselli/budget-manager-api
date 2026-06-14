@@ -9,6 +9,7 @@ import br.com.casellisoftware.budgetmanager.persistence.expense.ExpenseDocument;
 import br.com.casellisoftware.budgetmanager.persistence.installment.InstallmentDocument;
 import br.com.casellisoftware.budgetmanager.persistence.payer.PayerDocument;
 import br.com.casellisoftware.budgetmanager.persistence.payment.PaymentDocument;
+import br.com.casellisoftware.budgetmanager.persistence.reservedbudget.ReservedBudgetDocument;
 import br.com.casellisoftware.budgetmanager.persistence.subscription.SubscriptionDocument;
 import br.com.casellisoftware.budgetmanager.persistence.subscriptioncharge.SubscriptionChargeDocument;
 import br.com.casellisoftware.budgetmanager.persistence.sync.SyncPreferenceDocument;
@@ -38,6 +39,7 @@ public abstract class AbstractMongoIntegrationTest {
             InstallmentDocument.class,
             PayerDocument.class,
             PaymentDocument.class,
+            ReservedBudgetDocument.class,
             SubscriptionChargeDocument.class,
             SubscriptionDocument.class,
             SyncPreferenceDocument.class,

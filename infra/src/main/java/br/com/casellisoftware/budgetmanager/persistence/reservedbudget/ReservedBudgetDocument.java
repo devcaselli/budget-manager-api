@@ -20,6 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @CompoundIndex(name = "reservedBudget_owner_active_window_idx", def = "{'ownerId': 1, 'startMonth': 1, 'deleted': 1}")
+@CompoundIndex(name = "reservedBudget_links_source_idx", def = "{'links.sourceType': 1, 'links.sourceId': 1, 'ownerId': 1}", sparse = true)
 public class ReservedBudgetDocument {
 
     @Id
@@ -42,4 +43,7 @@ public class ReservedBudgetDocument {
     private LocalDateTime deletedAt;
 
     private List<ReservedBudgetVersionDocument> versions;
+
+    /** Embedded links; may be {@code null} for legacy documents that pre-date the Vínculos feature. */
+    private List<ReservedBudgetLinkDocument> links;
 }
