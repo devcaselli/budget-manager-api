@@ -44,6 +44,10 @@ app:
         expression: ${APP_SYNC_INGEST_CRON_EXPRESSION:0 */1 11-12 * * *}
       active-owner-window-days: ${APP_SYNC_INGEST_ACTIVE_WINDOW:7}
       page-size: 100
+  pluggy:
+    base-url: ${APP_PLUGGY_BASE_URL:https://api.pluggy.ai}
+    client-id: ${APP_PLUGGY_CLIENT_ID}
+    client-secret: ${APP_PLUGGY_CLIENT_SECRET}
 
 flags:
   values:
