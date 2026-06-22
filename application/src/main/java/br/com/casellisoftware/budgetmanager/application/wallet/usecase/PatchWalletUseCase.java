@@ -9,6 +9,7 @@ import br.com.casellisoftware.budgetmanager.application.wallet.boundary.PatchWal
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOutput;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOutputAssembler;
 import br.com.casellisoftware.budgetmanager.domain.installment.InstallmentRepository;
+import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetRepository;
 import br.com.casellisoftware.budgetmanager.domain.sharing.ShareRepository;
 import br.com.casellisoftware.budgetmanager.domain.subscription.SubscriptionRepository;
 import br.com.casellisoftware.budgetmanager.domain.wallet.Wallet;
@@ -42,13 +43,15 @@ public class PatchWalletUseCase implements PatchWalletBoundary {
                               SubscriptionRepository subscriptionRepository,
                               InstallmentRepository installmentRepository,
                               ShareRepository shareRepository,
+                              ReservedBudgetRepository reservedBudgetRepository,
                               Clock clock) {
         this(
                 walletRepository,
                 new RepositoryBackedWalletDeductionsQuery(
                         subscriptionRepository,
                         installmentRepository,
-                        shareRepository),
+                        shareRepository,
+                        reservedBudgetRepository),
                 clock
         );
     }

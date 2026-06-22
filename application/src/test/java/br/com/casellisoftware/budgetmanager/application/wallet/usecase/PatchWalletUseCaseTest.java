@@ -5,6 +5,7 @@ import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOu
 import br.com.casellisoftware.budgetmanager.domain.flag.FlagEnum;
 import br.com.casellisoftware.budgetmanager.domain.installment.Installment;
 import br.com.casellisoftware.budgetmanager.domain.installment.InstallmentRepository;
+import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetRepository;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.domain.sharing.ShareRepository;
 import br.com.casellisoftware.budgetmanager.domain.subscription.SubscriptionRepository;
@@ -52,6 +53,9 @@ class PatchWalletUseCaseTest {
     @Mock
     private ShareRepository shareRepository;
 
+    @Mock
+    private ReservedBudgetRepository reservedBudgetRepository;
+
     private PatchWalletUseCase useCase;
 
     @BeforeEach
@@ -60,7 +64,8 @@ class PatchWalletUseCaseTest {
         lenient().when(subscriptionRepository.findActiveFor(any(YearMonth.class), any(SubscriptionState.class)))
                 .thenReturn(List.of());
         lenient().when(installmentRepository.findActiveAffecting(any(YearMonth.class), org.mockito.ArgumentMatchers.anyString())).thenReturn(List.of());
-        useCase = new PatchWalletUseCase(walletRepository, subscriptionRepository, installmentRepository, shareRepository, clock);
+        lenient().when(reservedBudgetRepository.findActiveFor(any(YearMonth.class), org.mockito.ArgumentMatchers.anyString())).thenReturn(List.of());
+        useCase = new PatchWalletUseCase(walletRepository, subscriptionRepository, installmentRepository, shareRepository, reservedBudgetRepository, clock);
     }
 
     @Test

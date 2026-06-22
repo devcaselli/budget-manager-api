@@ -7,6 +7,7 @@ import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindAllW
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOutput;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOutputAssembler;
 import br.com.casellisoftware.budgetmanager.domain.installment.InstallmentRepository;
+import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetRepository;
 import br.com.casellisoftware.budgetmanager.domain.sharing.ShareRepository;
 import br.com.casellisoftware.budgetmanager.domain.subscription.SubscriptionRepository;
 import br.com.casellisoftware.budgetmanager.domain.wallet.Wallet;
@@ -34,13 +35,15 @@ public class FindAllWalletsUseCase implements FindAllWalletsBoundary {
     public FindAllWalletsUseCase(WalletRepository walletRepository,
                                  SubscriptionRepository subscriptionRepository,
                                  InstallmentRepository installmentRepository,
-                                 ShareRepository shareRepository) {
+                                 ShareRepository shareRepository,
+                                 ReservedBudgetRepository reservedBudgetRepository) {
         this(
                 walletRepository,
                 new RepositoryBackedWalletDeductionsQuery(
                         subscriptionRepository,
                         installmentRepository,
-                        shareRepository)
+                        shareRepository,
+                        reservedBudgetRepository)
         );
     }
 

@@ -81,3 +81,6 @@ element-list
 
 # Helm local overrides (secrets)
 k8s/values-local.yaml
+
+# Runtime logs
+logs/

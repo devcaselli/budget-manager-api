@@ -3,6 +3,7 @@ package br.com.casellisoftware.budgetmanager.persistence.subscription;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +22,8 @@ public interface SubscriptionMongoRepository extends MongoRepository<Subscriptio
     List<SubscriptionDocument> findActiveFor(String month, String ownerId);
 
     Optional<SubscriptionDocument> findByIdAndOwnerId(String id, String ownerId);
+
+    List<SubscriptionDocument> findAllByIdInAndOwnerId(Collection<String> ids, String ownerId);
 
     org.springframework.data.domain.Page<SubscriptionDocument> findAllByOwnerId(String ownerId, org.springframework.data.domain.Pageable pageable);
 

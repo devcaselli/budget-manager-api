@@ -4,6 +4,7 @@ import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletOu
 import br.com.casellisoftware.budgetmanager.domain.flag.FlagEnum;
 import br.com.casellisoftware.budgetmanager.domain.installment.Installment;
 import br.com.casellisoftware.budgetmanager.domain.installment.InstallmentRepository;
+import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetRepository;
 import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.domain.sharing.ShareRepository;
 import br.com.casellisoftware.budgetmanager.domain.subscription.NoSubscriptionRepository;
@@ -51,6 +52,9 @@ class FindAllWalletsUseCaseTest {
     @Mock
     private ShareRepository shareRepository;
 
+    @Mock
+    private ReservedBudgetRepository reservedBudgetRepository;
+
     private FindAllWalletsUseCase useCase;
     private FindAllWalletsUseCase useCaseWithoutSubs;
 
@@ -58,13 +62,15 @@ class FindAllWalletsUseCaseTest {
     void setUp() {
         lenient().when(installmentRepository.findActiveAffecting(any(YearMonth.class), org.mockito.ArgumentMatchers.anyString())).thenReturn(List.of());
         lenient().when(installmentRepository.findActiveAffectingAny(any(Collection.class), org.mockito.ArgumentMatchers.anyString())).thenReturn(List.of());
+        lenient().when(reservedBudgetRepository.findActiveForAny(any(List.class), org.mockito.ArgumentMatchers.anyString())).thenReturn(List.of());
         useCaseWithoutSubs = new FindAllWalletsUseCase(
                 walletRepository,
                 NoSubscriptionRepository.INSTANCE,
                 installmentRepository,
-                shareRepository
+                shareRepository,
+                reservedBudgetRepository
         );
-        useCase = new FindAllWalletsUseCase(walletRepository, subscriptionRepository, installmentRepository, shareRepository);
+        useCase = new FindAllWalletsUseCase(walletRepository, subscriptionRepository, installmentRepository, shareRepository, reservedBudgetRepository);
     }
 
     @Test

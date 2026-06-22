@@ -11,3 +11,7 @@ app:
         enabled: false
       active-owner-window-days: 30
       page-size: 100
+  pluggy:
+    base-url: http://localhost:9999  # stub — no real calls in unit tests
+    client-id: test-client-id
+    client-secret: test-client-secret
