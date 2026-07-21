@@ -92,6 +92,19 @@ public class InstallmentController {
         return ResponseEntity.ok(mapper.toPagedResponse(result));
     }
 
+    @GetMapping("/wallet/{walletId}/finished")
+    public ResponseEntity<PagedInstallmentResponseDto> findFinishedByWalletId(
+            @PathVariable String walletId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String creditCardId,
+            @RequestParam(required = false, defaultValue = "ENDING_LATE") InstallmentSortOrder sort,
+            AuthenticatedUser authenticatedUser) {
+        InstallmentWalletFilter filter = new InstallmentWalletFilter(page, size, creditCardId, sort);
+        PageResult<InstallmentOutput> result = findInstallmentsByWalletIdBoundary.executeFinished(walletId, filter, authenticatedUser.ownerId());
+        return ResponseEntity.ok(mapper.toPagedResponse(result));
+    }
+
     @GetMapping("/wallet/{walletId}/all")
     public ResponseEntity<List<InstallmentResponseDto>> findAllByWalletId(
             @PathVariable String walletId,

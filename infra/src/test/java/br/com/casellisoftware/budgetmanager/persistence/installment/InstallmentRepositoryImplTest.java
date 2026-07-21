@@ -178,6 +178,51 @@ class InstallmentRepositoryImplTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
+    void findFinishedByWalletContext_returnsOnlyInstallmentsEndedBeforeEffectiveMonth() {
+        // finishes 2026-08 (< 2026-10) -> finished
+        Installment finished = repository.save(installment(
+                "Finished", "cc1", "w1", YearMonth.of(2026, 3), 6, "6000.00", "1000.00"));
+        // finishes 2026-10 (== 2026-10) -> still active, not finished
+        Installment activeAtBoundary = repository.save(installment(
+                "Active", "cc1", "w2", YearMonth.of(2026, 5), 6, "6000.00", "1000.00"));
+        // deleted, even though finished -> excluded
+        Installment deleted = repository.save(installment(
+                "Deleted", "cc1", "w3", YearMonth.of(2026, 3), 6, "6000.00", "1000.00")
+                .delete(java.time.Clock.systemUTC()));
+
+        PageResult<Installment> result = repository.findFinishedByWalletContext(
+                YearMonth.of(2026, 10), null,
+                br.com.casellisoftware.budgetmanager.domain.installment.InstallmentSortOrder.ENDING_LATE,
+                0, 20, Installment.LEGACY_OWNER_ID);
+
+        assertThat(result.content())
+                .extracting(Installment::getId)
+                .containsExactly(finished.getId())
+                .doesNotContain(activeAtBoundary.getId(), deleted.getId());
+    }
+
+    @Test
+    void findFinishedByWalletContext_filtersByCreditCardIdAndPaginates() {
+        repository.save(installment(
+                "F1", "cc1", "w1", YearMonth.of(2026, 3), 6, "6000.00", "1000.00")); // finishes 2026-08
+        repository.save(installment(
+                "F2", "cc1", "w2", YearMonth.of(2026, 4), 6, "6000.00", "1000.00")); // finishes 2026-09
+        repository.save(installment(
+                "OtherCard", "cc2", "w3", YearMonth.of(2026, 3), 6, "6000.00", "1000.00"));
+
+        PageResult<Installment> page0 = repository.findFinishedByWalletContext(
+                YearMonth.of(2026, 10), "cc1",
+                br.com.casellisoftware.budgetmanager.domain.installment.InstallmentSortOrder.ENDING_LATE,
+                0, 1, Installment.LEGACY_OWNER_ID);
+
+        assertThat(page0.totalElements()).isEqualTo(2);
+        assertThat(page0.totalPages()).isEqualTo(2);
+        assertThat(page0.content()).hasSize(1);
+        // ENDING_LATE => latest lastInstallmentDate first => F2 (2026-09)
+        assertThat(page0.content().get(0).getDescription()).isEqualTo("F2");
+    }
+
+    @Test
     void findAll_returnsPagedResults() {
         repository.save(installment(
                 "A", "cc1", "w1", YearMonth.of(2026, 5), 6, "6000.00", "1000.00"));

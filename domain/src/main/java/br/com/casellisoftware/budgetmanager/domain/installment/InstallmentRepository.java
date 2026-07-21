@@ -120,6 +120,32 @@ public interface InstallmentRepository {
                                           InstallmentSortOrder sortOrder,
                                           String ownerId);
 
+    /**
+     * Finished (fully-paid) installments relative to a wallet's effective month.
+     *
+     * <p>An installment is "finished" when its payment window has already closed
+     * before the wallet's effective month. Unlike {@link #findByWalletContext}, this
+     * query is purely temporal per owner — it does not include the source-wallet branch.</p>
+     *
+     * <p>Semantics: {@code ownerId = :ownerId AND deleted = false AND
+     * lastInstallmentDate < :effectiveMonth [AND creditCardId = :creditCardId]}
+     * ORDER BY lastInstallmentDate ASC|DESC
+     * </p>
+     *
+     * @param effectiveMonth  the wallet's effective month; installments finishing strictly before it
+     * @param creditCardId    optional credit-card filter; {@code null} means no filter
+     * @param sortOrder       sort direction on {@code lastInstallmentDate}
+     * @param page            zero-based page index
+     * @param size            page size
+     * @param ownerId         owner for multi-tenant isolation
+     */
+    PageResult<Installment> findFinishedByWalletContext(YearMonth effectiveMonth,
+                                                        String creditCardId,
+                                                        InstallmentSortOrder sortOrder,
+                                                        int page,
+                                                        int size,
+                                                        String ownerId);
+
     PageResult<Installment> findAll(int page, int size);
     PageResult<Installment> findAll(int page, int size, String ownerId);
 }

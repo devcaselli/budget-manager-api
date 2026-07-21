@@ -10,4 +10,6 @@ public interface FindInstallmentsByWalletIdBoundary {
     PageResult<InstallmentOutput> execute(String walletId, InstallmentWalletFilter filter, String ownerId);
 
     List<InstallmentOutput> executeAll(String walletId, String creditCardId, InstallmentSortOrder sortOrder, String ownerId);
+
+    PageResult<InstallmentOutput> executeFinished(String walletId, InstallmentWalletFilter filter, String ownerId);
 }

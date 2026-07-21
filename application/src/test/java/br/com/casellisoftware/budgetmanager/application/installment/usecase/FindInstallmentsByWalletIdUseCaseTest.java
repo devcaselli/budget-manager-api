@@ -151,6 +151,46 @@ class FindInstallmentsByWalletIdUseCaseTest {
                 eq(InstallmentSortOrder.ENDING_SOON), eq(0), eq(20), eq(OWNER_ID));
     }
 
+    @Test
+    void executeFinished_returnsPagedResultFromRepository() {
+        Wallet wallet = wallet(WALLET_ID, EFFECTIVE_MONTH);
+        Installment inst1 = installment("fin-1", WALLET_ID);
+        PageResult<Installment> repoPage = new PageResult<>(List.of(inst1), 0, 20, 1, 1);
+
+        when(findWalletDomainByIdBoundary.findById(WALLET_ID, OWNER_ID)).thenReturn(wallet);
+        when(installmentRepository.findFinishedByWalletContext(
+                eq(EFFECTIVE_MONTH), isNull(),
+                eq(InstallmentSortOrder.ENDING_LATE), eq(0), eq(20), eq(OWNER_ID)))
+                .thenReturn(repoPage);
+
+        InstallmentWalletFilter filter = new InstallmentWalletFilter(0, 20, null, InstallmentSortOrder.ENDING_LATE);
+        PageResult<InstallmentOutput> result = useCase.executeFinished(WALLET_ID, filter, OWNER_ID);
+
+        assertThat(result.content())
+                .extracting(InstallmentOutput::id)
+                .containsExactly("fin-1");
+        assertThat(result.totalElements()).isEqualTo(1);
+    }
+
+    @Test
+    void executeFinished_resolvesWalletEffectiveMonthAndPassesFilter() {
+        Wallet wallet = wallet(WALLET_ID, EFFECTIVE_MONTH);
+        PageResult<Installment> repoPage = new PageResult<>(List.of(), 1, 10, 0, 0);
+
+        when(findWalletDomainByIdBoundary.findById(WALLET_ID, OWNER_ID)).thenReturn(wallet);
+        when(installmentRepository.findFinishedByWalletContext(
+                eq(EFFECTIVE_MONTH), eq("cc-7"),
+                eq(InstallmentSortOrder.ENDING_SOON), eq(1), eq(10), eq(OWNER_ID)))
+                .thenReturn(repoPage);
+
+        InstallmentWalletFilter filter = new InstallmentWalletFilter(1, 10, "cc-7", InstallmentSortOrder.ENDING_SOON);
+        useCase.executeFinished(WALLET_ID, filter, OWNER_ID);
+
+        verify(installmentRepository).findFinishedByWalletContext(
+                eq(EFFECTIVE_MONTH), eq("cc-7"),
+                eq(InstallmentSortOrder.ENDING_SOON), eq(1), eq(10), eq(OWNER_ID));
+    }
+
     // --- helpers ---
 
     private static Wallet wallet(String id, YearMonth effectiveMonth) {

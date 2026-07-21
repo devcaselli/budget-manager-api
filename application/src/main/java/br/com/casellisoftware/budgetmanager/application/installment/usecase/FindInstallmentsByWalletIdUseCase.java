@@ -69,6 +69,24 @@ public class FindInstallmentsByWalletIdUseCase implements FindInstallmentsByWall
                 .toList();
     }
 
+    @Override
+    public PageResult<InstallmentOutput> executeFinished(String walletId, InstallmentWalletFilter filter, String ownerId) {
+        Objects.requireNonNull(walletId, "walletId must not be null");
+        Objects.requireNonNull(filter, "filter must not be null");
+        Objects.requireNonNull(ownerId, "ownerId must not be null");
+
+        Wallet wallet = findWalletOrThrow(walletId, ownerId);
+
+        return installmentRepository.findFinishedByWalletContext(
+                wallet.getEffectiveMonth(),
+                filter.creditCardId(),
+                filter.sortOrder(),
+                filter.page(),
+                filter.size(),
+                ownerId
+        ).map(installment -> enrichWithShare(installment, wallet, ownerId));
+    }
+
     private Wallet findWalletOrThrow(String walletId, String ownerId) {
         return findWalletDomainByIdBoundary.findById(walletId, ownerId);
     }

@@ -284,6 +284,55 @@ public class InstallmentRepositoryImpl implements InstallmentRepository {
         return baseCriteria;
     }
 
+    @Override
+    public PageResult<Installment> findFinishedByWalletContext(YearMonth effectiveMonth,
+                                                               String creditCardId,
+                                                               InstallmentSortOrder sortOrder,
+                                                               int page,
+                                                               int size,
+                                                               String ownerId) {
+        Criteria baseCriteria = buildFinishedCriteria(effectiveMonth, creditCardId, ownerId);
+        Sort sort = buildWalletContextSort(sortOrder);
+
+        Query countQuery = new Query(baseCriteria);
+        long total = mongoTemplate.count(countQuery, InstallmentDocument.class);
+
+        Query pageQuery = new Query(baseCriteria)
+                .with(sort)
+                .skip((long) page * size)
+                .limit(size);
+
+        List<Installment> installments = mongoTemplate.find(pageQuery, InstallmentDocument.class)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+
+        int totalPages = size == 0 ? 0 : (int) Math.ceil((double) total / size);
+        return new PageResult<>(installments, page, size, total, totalPages);
+    }
+
+    private Criteria buildFinishedCriteria(YearMonth effectiveMonth,
+                                           String creditCardId,
+                                           String ownerId) {
+        // YearMonth must be serialized to its String form (YYYY-MM); passing the
+        // YearMonth instance directly causes Spring Data to BSON-encode it as a
+        // sub-document {year, month}, which never matches the stored string and
+        // silently returns an empty result set.
+        String effectiveMonthAsString = effectiveMonth.toString();
+
+        Criteria baseCriteria = new Criteria().andOperator(
+                Criteria.where("ownerId").is(ownerId),
+                Criteria.where("deleted").is(false),
+                Criteria.where("lastInstallmentDate").lt(effectiveMonthAsString)
+        );
+
+        if (creditCardId != null && !creditCardId.isBlank()) {
+            return new Criteria().andOperator(baseCriteria, Criteria.where("creditCardId").is(creditCardId));
+        }
+
+        return baseCriteria;
+    }
+
     private Sort buildWalletContextSort(InstallmentSortOrder sortOrder) {
         return sortOrder == InstallmentSortOrder.ENDING_LATE
                 ? Sort.by(Sort.Direction.DESC, "lastInstallmentDate")

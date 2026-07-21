@@ -128,6 +128,26 @@ class InstallmentControllerTest {
     }
 
     @Test
+    void findFinishedByWalletId_returnsMappedPage() throws Exception {
+        InstallmentOutput first = output("fin-1", false, null);
+        InstallmentResponseDto firstResponse = response("fin-1", false, null);
+
+        PageResult<InstallmentOutput> result = new PageResult<>(List.of(first), 0, 20, 1, 1);
+        PagedInstallmentResponseDto responsePage = new PagedInstallmentResponseDto(
+                List.of(firstResponse), 0, 20, 1, 1);
+        when(findInstallmentsByWalletIdBoundary.executeFinished(org.mockito.ArgumentMatchers.eq("wallet-1"), any(), any()))
+                .thenReturn(result);
+        when(mapper.toPagedResponse(result)).thenReturn(responsePage);
+
+        mockMvc.perform(get(INSTALLMENTS_PATH + "/wallet/wallet-1/finished"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[*].id", containsInAnyOrder("fin-1")))
+                .andExpect(jsonPath("$.totalElements").value(1));
+
+        verify(findInstallmentsByWalletIdBoundary).executeFinished(org.mockito.ArgumentMatchers.eq("wallet-1"), any(), org.mockito.ArgumentMatchers.eq("legacy"));
+    }
+
+    @Test
     void deleteById_returns204() throws Exception {
         mockMvc.perform(delete(INSTALLMENTS_PATH + "/inst-1"))
                 .andExpect(status().isNoContent());
