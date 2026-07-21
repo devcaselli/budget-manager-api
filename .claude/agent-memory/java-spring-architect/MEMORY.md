@@ -1,2 +1,3 @@
 - [Spring Boot 4 + Jackson 3 package moves](project_spring_boot_4_package_moves.md) — @WebMvcTest e ObjectMapper moveram de package; snippets do Boot 3 não compilam
 - [@WebMvcTest + nested dummy controller](feedback_webmvctest_nested_controllers.md) — `controllers = X` não importa nested classes, adicionar ao `@Import`
+- [Pluggy integration](project_pluggy_integration.md) — bank-sync feature; backend mirrors the `sync` ingest subsystem, frontend greenfield; free plan forces widget-created items

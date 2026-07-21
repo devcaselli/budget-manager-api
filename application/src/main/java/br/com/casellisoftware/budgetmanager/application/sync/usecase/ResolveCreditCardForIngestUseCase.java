@@ -40,18 +40,30 @@ public class ResolveCreditCardForIngestUseCase {
      * @return matched credit card or the {@code card_sync} placeholder; never null
      */
     public ResolvedCard resolve(PendingExpense pending) {
-        String normalizedLabel = LabelNormalizer.normalize(pending.cardLabel());
+        return resolve(pending.ownerId(), pending.cardLabel());
+    }
+
+    /**
+     * Resolves the credit card for an owner/label pair, decoupled from {@link PendingExpense}
+     * so non-ingest callers (e.g. Pluggy materialize) can reuse the same matching strategy.
+     *
+     * @param ownerId   owner to scope the lookup to
+     * @param cardLabel raw label to match, or {@code null}/blank to go straight to the placeholder
+     * @return matched credit card or the {@code card_sync} placeholder; never null
+     */
+    public ResolvedCard resolve(String ownerId, String cardLabel) {
+        String normalizedLabel = LabelNormalizer.normalize(cardLabel);
 
         if (!normalizedLabel.isBlank()) {
-            var matched = creditCardRepository.findByNormalizedLabel(normalizedLabel, pending.ownerId());
+            var matched = creditCardRepository.findByNormalizedLabel(normalizedLabel, ownerId);
             if (matched.isPresent()) {
-                log.debug("Matched cardLabel='{}' to creditCardId={} ownerId={}", pending.cardLabel(), matched.get().getId(), pending.ownerId());
+                log.debug("Matched cardLabel='{}' to creditCardId={} ownerId={}", cardLabel, matched.get().getId(), ownerId);
                 return new ResolvedCard(matched.get(), false);
             }
         }
 
-        log.info("No label match for cardLabel='{}' ownerId={} — using card_sync placeholder", pending.cardLabel(), pending.ownerId());
-        CreditCard placeholder = ensurePlaceholder.ensureFor(pending.ownerId());
+        log.info("No label match for cardLabel='{}' ownerId={} — using card_sync placeholder", cardLabel, ownerId);
+        CreditCard placeholder = ensurePlaceholder.ensureFor(ownerId);
         return new ResolvedCard(placeholder, true);
     }
 

@@ -2,28 +2,22 @@ package br.com.casellisoftware.budgetmanager.application.reservedbudget.usecase;
 
 import br.com.casellisoftware.budgetmanager.application.wallet.EffectiveShareAmount;
 import br.com.casellisoftware.budgetmanager.domain.installment.Installment;
-import br.com.casellisoftware.budgetmanager.domain.installment.InstallmentAffectsWalletSpecification;
 import br.com.casellisoftware.budgetmanager.domain.installment.InstallmentRepository;
 import br.com.casellisoftware.budgetmanager.domain.reservedbudget.LinkedItemAmounts;
 import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudget;
 import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLink;
 import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLinkCapValidator;
 import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetLinkSourceType;
-import br.com.casellisoftware.budgetmanager.domain.shared.Money;
 import br.com.casellisoftware.budgetmanager.domain.sharing.Share;
 import br.com.casellisoftware.budgetmanager.domain.sharing.ShareRepository;
 import br.com.casellisoftware.budgetmanager.domain.sharing.ShareSourceType;
 import br.com.casellisoftware.budgetmanager.domain.subscription.Subscription;
 import br.com.casellisoftware.budgetmanager.domain.subscription.SubscriptionRepository;
 
-import java.time.YearMonth;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -101,76 +95,13 @@ public class ReservedBudgetLinkValidationService {
                 ? Map.of()
                 : shareRepository.findActiveBySourceIds(ShareSourceType.INSTALLMENT, instIds, ownerId);
 
-        LinkedItemAmounts amounts = buildLinkedItemAmounts(subscriptions, installments, subShares, instShares);
+        LinkedItemAmounts amounts = LinkedItemAmountsFactory.from(subscriptions, installments, subShares, instShares);
         capValidator.validate(rb, effectiveLinks, amounts);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Private helpers
     // ─────────────────────────────────────────────────────────────────────────
-
-    private LinkedItemAmounts buildLinkedItemAmounts(Map<String, Subscription> subscriptions,
-                                                     Map<String, Installment> installments,
-                                                     Map<String, Share> subShares,
-                                                     Map<String, Share> instShares) {
-        return new LinkedItemAmounts() {
-
-            @Override
-            public Optional<Money> effectiveAmount(ReservedBudgetLink link, YearMonth month) {
-                if (link.sourceType() == ReservedBudgetLinkSourceType.SUBSCRIPTION) {
-                    Subscription sub = subscriptions.get(link.sourceId());
-                    if (sub == null) return Optional.empty();
-                    // Subscription applies only within [startMonth, endMonth)
-                    if (month.isBefore(sub.getStartMonth())) return Optional.empty();
-                    if (sub.getEndMonth() != null && !month.isBefore(sub.getEndMonth())) return Optional.empty();
-                    Share share = subShares.get(link.sourceId());
-                    return Optional.of(EffectiveShareAmount.forSubscription(sub, share, month));
-                } else {
-                    Installment inst = installments.get(link.sourceId());
-                    if (inst == null) return Optional.empty();
-                    // Installment applies only in its active window
-                    if (!InstallmentAffectsWalletSpecification.isSatisfiedBy(inst, month)) return Optional.empty();
-                    Share share = instShares.get(link.sourceId());
-                    return Optional.of(EffectiveShareAmount.forInstallment(inst, share, month));
-                }
-            }
-
-            @Override
-            public Set<YearMonth> breakpoints(ReservedBudgetLink link) {
-                Set<YearMonth> bps = new HashSet<>();
-                bps.add(link.fromMonth());
-
-                if (link.sourceType() == ReservedBudgetLinkSourceType.SUBSCRIPTION) {
-                    Subscription sub = subscriptions.get(link.sourceId());
-                    if (sub != null) {
-                        // Sub version months: where sub amount steps
-                        sub.getVersions().forEach(v -> bps.add(v.effectiveMonth()));
-                        // End month: sub stops applying
-                        if (sub.getEndMonth() != null) bps.add(sub.getEndMonth());
-                    }
-                    Share share = subShares.get(link.sourceId());
-                    if (share != null && share.getStoppedFromMonth() != null) {
-                        // Share stop month: effective amount changes (full amount from here)
-                        bps.add(share.getStoppedFromMonth());
-                    }
-                } else {
-                    Installment inst = installments.get(link.sourceId());
-                    if (inst != null) {
-                        // Installment first month of activity
-                        bps.add(inst.getSourceEffectiveMonth());
-                        // Month after last installment: inst expires → sum drops
-                        bps.add(inst.getLastInstallmentDate().plusMonths(1));
-                    }
-                    Share share = instShares.get(link.sourceId());
-                    if (share != null && share.getStoppedFromMonth() != null) {
-                        bps.add(share.getStoppedFromMonth());
-                    }
-                }
-
-                return bps;
-            }
-        };
-    }
 
     private static List<String> filterIds(Collection<ReservedBudgetLink> links,
                                           ReservedBudgetLinkSourceType type) {

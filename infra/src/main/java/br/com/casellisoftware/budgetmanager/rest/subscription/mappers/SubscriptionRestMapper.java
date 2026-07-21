@@ -30,6 +30,7 @@ public interface SubscriptionRestMapper {
     @Mapping(target = "description", source = "request.description")
     @Mapping(target = "newAmount", source = "request.newAmount")
     @Mapping(target = "creditCardId", source = "request.creditCardId")
+    @Mapping(target = "effectiveMonth", source = "request.effectiveMonth")
     @Mapping(target = "ownerId", constant = "legacy")
     @Mapping(target = "withOwnerId", ignore = true)
     PatchSubscriptionInput toPatchInput(String id, SubscriptionPatchRequestDto request);

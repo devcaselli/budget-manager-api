@@ -2,6 +2,7 @@ package br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary
 
 import br.com.casellisoftware.budgetmanager.domain.flag.FlagEnum;
 
+import java.math.BigDecimal;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -14,6 +15,8 @@ public record ReservedBudgetOutput(
         List<ReservedBudgetVersionOutput> versions,
         List<ReservedBudgetLinkOutput> links,
         boolean deleted,
-        FlagEnum flag
+        FlagEnum flag,
+        BigDecimal consumedAmount,
+        BigDecimal remainingAmount
 ) {
 }

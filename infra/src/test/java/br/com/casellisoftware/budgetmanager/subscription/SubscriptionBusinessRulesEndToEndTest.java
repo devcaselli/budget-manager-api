@@ -11,6 +11,7 @@ import br.com.casellisoftware.budgetmanager.application.subscription.boundary.Su
 import br.com.casellisoftware.budgetmanager.application.subscriptioncharge.boundary.FindSubscriptionChargesByWalletIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.subscriptioncharge.boundary.SubscriptionChargeOutput;
 import br.com.casellisoftware.budgetmanager.application.shared.AuthenticatedUser;
+import br.com.casellisoftware.budgetmanager.domain.flag.FlagEnum;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.FindWalletByIdBoundary;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.SaveWalletBoundary;
 import br.com.casellisoftware.budgetmanager.application.wallet.boundary.WalletInput;
@@ -107,11 +108,16 @@ class SubscriptionBusinessRulesEndToEndTest {
     @Test
     void scenario2_valueVersioningKeepsHistoricalAmountByWalletMonth() {
         SubscriptionOutput subscription = saveSubscription("Streaming", TWO_HUNDRED, "BRL");
-        clock.setCurrentMonth(YearMonth.of(2026, 7));
+        // Anchor the amount change to July EXPLICITLY (the wallet the user edits from),
+        // not to the server clock. Earlier wallets (May/June) keep the historical amount.
         patchSubscriptionBoundary.execute(new PatchSubscriptionInput(
                 subscription.id(),
                 null,
-                ONE_HUNDRED_FIFTY
+                ONE_HUNDRED_FIFTY,
+                null,
+                FlagEnum.NONE,
+                AuthenticatedUser.LEGACY_OWNER_ID,
+                YearMonth.of(2026, 7)
         ));
 
         WalletOutput mayWallet = saveWallet("May", ONE_THOUSAND, LocalDate.of(2026, 5, 1));

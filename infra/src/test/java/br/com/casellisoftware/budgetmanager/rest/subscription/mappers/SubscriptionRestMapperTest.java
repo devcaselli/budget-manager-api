@@ -41,6 +41,17 @@ class SubscriptionRestMapperTest {
     }
 
     @Test
+    void toPatchInput_copiesEffectiveMonth() {
+        SubscriptionPatchRequestDto request = new SubscriptionPatchRequestDto(
+                "Netflix Premium", new BigDecimal("60.00"), "cc-2",
+                br.com.casellisoftware.budgetmanager.domain.flag.FlagEnum.NONE, YearMonth.of(2026, 8));
+
+        PatchSubscriptionInput input = mapper.toPatchInput("subscription-1", request);
+
+        assertThat(input.effectiveMonth()).isEqualTo(YearMonth.of(2026, 8));
+    }
+
+    @Test
     void toResponse_copiesAllFieldsAndVersions() {
         SubscriptionOutput output = output("subscription-1", "Netflix");
 

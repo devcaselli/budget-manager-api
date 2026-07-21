@@ -20,6 +20,7 @@ import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudget
 import br.com.casellisoftware.budgetmanager.domain.payment.WalletMismatchException;
 import br.com.casellisoftware.budgetmanager.domain.payer.PayerLifecycleChangeNotAllowedException;
 import br.com.casellisoftware.budgetmanager.domain.payer.PayerNotFoundException;
+import br.com.casellisoftware.budgetmanager.domain.pluggy.PluggyConnectionNotFoundException;
 import br.com.casellisoftware.budgetmanager.domain.shared.CrossOwnerAccessException;
 import br.com.casellisoftware.budgetmanager.domain.sharing.ShareAlreadyActiveForSourceException;
 import br.com.casellisoftware.budgetmanager.domain.sharing.ShareAlreadyRevertedException;
@@ -263,6 +264,17 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
         problem.setTitle("CreditCard not found");
+        problem.setProperty(CORRELATION_ID, newCorrelationId());
+        return problemResponse(HttpStatus.NOT_FOUND, problem);
+    }
+
+    @ExceptionHandler(PluggyConnectionNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handlePluggyConnectionNotFound(PluggyConnectionNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage()
+        );
+        problem.setTitle("Pluggy connection not found");
         problem.setProperty(CORRELATION_ID, newCorrelationId());
         return problemResponse(HttpStatus.NOT_FOUND, problem);
     }

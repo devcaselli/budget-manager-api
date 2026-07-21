@@ -50,7 +50,7 @@ class PatchSubscriptionUseCaseTest {
     }
 
     @Test
-    void execute_renamesAndAddsVersionAtCurrentMonthWhenAmountChanges() {
+    void execute_whenNoEffectiveMonth_addsVersionAtCurrentClockMonth() {
         Subscription existing = subscription();
         PatchSubscriptionInput input = new PatchSubscriptionInput(
                 "subscription-1",
@@ -67,11 +67,41 @@ class PatchSubscriptionUseCaseTest {
         Subscription saved = captor.getValue();
 
         assertThat(saved.getDescription()).isEqualTo("music");
+        // No effectiveMonth in input → falls back to FIXED_CLOCK month (2026-07).
         assertThat(saved.resolveAmount(YearMonth.of(2026, 6))).isEqualTo(Money.of("50.00"));
         assertThat(saved.resolveAmount(YearMonth.of(2026, 7))).isEqualTo(Money.of("65.00"));
         assertThat(saved.getVersions()).hasSize(2);
         assertThat(output.description()).isEqualTo("music");
         assertThat(output.versions()).hasSize(2);
+    }
+
+    @Test
+    void execute_whenEffectiveMonthProvided_anchorsVersionToThatMonthNotClock() {
+        // Subscription starts 2026-05 @ 50.00. Clock is fixed at 2026-07.
+        // Editing anchored to 2026-08 must land the new version in August,
+        // leaving May/June/July at 50.00 — proving the clock is NOT used.
+        Subscription existing = subscription();
+        PatchSubscriptionInput input = new PatchSubscriptionInput(
+                "subscription-1",
+                null,
+                new BigDecimal("80.00"),
+                null,
+                FlagEnum.NONE,
+                "legacy",
+                YearMonth.of(2026, 8)
+        );
+        when(subscriptionRepository.findById("subscription-1", "legacy")).thenReturn(Optional.of(existing));
+        when(subscriptionRepository.save(any(Subscription.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        useCase.execute(input);
+
+        ArgumentCaptor<Subscription> captor = ArgumentCaptor.forClass(Subscription.class);
+        verify(subscriptionRepository).save(captor.capture());
+        Subscription saved = captor.getValue();
+
+        assertThat(saved.resolveAmount(YearMonth.of(2026, 7))).isEqualTo(Money.of("50.00"));
+        assertThat(saved.resolveAmount(YearMonth.of(2026, 8))).isEqualTo(Money.of("80.00"));
+        assertThat(saved.getVersions()).hasSize(2);
     }
 
     @Test

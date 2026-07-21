@@ -23,6 +23,11 @@ RUN addgroup -S budgetmanager && adduser -S budgetmanager -G budgetmanager
 
 COPY --from=build /workspace/infra/target/infra-0.0.1-SNAPSHOT.jar /app/app.jar
 
+# Logback writes to ./logs (relative to WORKDIR /app). The container may run
+# under an arbitrary host UID (compose sets `user:` so it can read the
+# host-mounted JWT keys), so make the dir writable regardless of UID.
+RUN mkdir -p /app/logs && chmod 777 /app/logs
+
 USER budgetmanager
 
 EXPOSE 8080

@@ -20,6 +20,8 @@ import br.com.casellisoftware.budgetmanager.domain.subscription.exception.Subscr
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Clock;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -51,15 +53,21 @@ public class LinkReservedBudgetSourceUseCase implements LinkReservedBudgetSource
     private final SubscriptionRepository subscriptionRepository;
     private final InstallmentRepository installmentRepository;
     private final ReservedBudgetLinkValidationService validationService;
+    private final ReservedBudgetConsumptionQuery consumptionQuery;
+    private final Clock clock;
 
     public LinkReservedBudgetSourceUseCase(ReservedBudgetRepository reservedBudgetRepository,
                                            SubscriptionRepository subscriptionRepository,
                                            InstallmentRepository installmentRepository,
-                                           ReservedBudgetLinkValidationService validationService) {
+                                           ReservedBudgetLinkValidationService validationService,
+                                           ReservedBudgetConsumptionQuery consumptionQuery,
+                                           Clock clock) {
         this.reservedBudgetRepository = Objects.requireNonNull(reservedBudgetRepository);
         this.subscriptionRepository = Objects.requireNonNull(subscriptionRepository);
         this.installmentRepository = Objects.requireNonNull(installmentRepository);
         this.validationService = Objects.requireNonNull(validationService);
+        this.consumptionQuery = Objects.requireNonNull(consumptionQuery);
+        this.clock = Objects.requireNonNull(clock);
     }
 
     @Override
@@ -99,7 +107,10 @@ public class LinkReservedBudgetSourceUseCase implements LinkReservedBudgetSource
         log.info("Link created: {} '{}' → reserved budget '{}'",
                 input.sourceType(), input.sourceId(), saved.getId());
 
-        return ReservedBudgetOutputAssembler.from(saved);
+        ReservedBudgetConsumptionQuery.ReservedBudgetConsumption consumption =
+                consumptionQuery.consume(saved, YearMonth.now(clock), input.ownerId());
+        return ReservedBudgetOutputAssembler.from(
+                saved, consumption.consumed(), consumption.remaining());
     }
 
     /**

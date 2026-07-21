@@ -37,7 +37,8 @@ public class PatchSubscriptionUseCase implements PatchSubscriptionBoundary {
                 .orElseThrow(() -> new SubscriptionNotFoundException(input.id()));
 
         SubscriptionPatch patch = PatchSubscriptionInputAssembler.toPatch(input, existing.getCurrency());
-        Subscription patched = existing.applyPatch(patch, YearMonth.now(clock));
+        YearMonth effectiveMonth = input.effectiveMonth() != null ? input.effectiveMonth() : YearMonth.now(clock);
+        Subscription patched = existing.applyPatch(patch, effectiveMonth);
         Subscription saved = subscriptionRepository.save(patched);
         log.info("Subscription patched successfully, id={}", saved.getId());
 

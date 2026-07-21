@@ -11,6 +11,8 @@ import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudget
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Clock;
+import java.time.YearMonth;
 import java.util.Objects;
 
 /**
@@ -26,9 +28,15 @@ public class UnlinkReservedBudgetSourceUseCase implements UnlinkReservedBudgetSo
     private static final Logger log = LoggerFactory.getLogger(UnlinkReservedBudgetSourceUseCase.class);
 
     private final ReservedBudgetRepository reservedBudgetRepository;
+    private final ReservedBudgetConsumptionQuery consumptionQuery;
+    private final Clock clock;
 
-    public UnlinkReservedBudgetSourceUseCase(ReservedBudgetRepository reservedBudgetRepository) {
+    public UnlinkReservedBudgetSourceUseCase(ReservedBudgetRepository reservedBudgetRepository,
+                                             ReservedBudgetConsumptionQuery consumptionQuery,
+                                             Clock clock) {
         this.reservedBudgetRepository = Objects.requireNonNull(reservedBudgetRepository);
+        this.consumptionQuery = Objects.requireNonNull(consumptionQuery);
+        this.clock = Objects.requireNonNull(clock);
     }
 
     @Override
@@ -49,6 +57,9 @@ public class UnlinkReservedBudgetSourceUseCase implements UnlinkReservedBudgetSo
         log.info("Link removed: {} '{}' from reserved budget '{}'",
                 input.sourceType(), input.sourceId(), saved.getId());
 
-        return ReservedBudgetOutputAssembler.from(saved);
+        ReservedBudgetConsumptionQuery.ReservedBudgetConsumption consumption =
+                consumptionQuery.consume(saved, YearMonth.now(clock), input.ownerId());
+        return ReservedBudgetOutputAssembler.from(
+                saved, consumption.consumed(), consumption.remaining());
     }
 }

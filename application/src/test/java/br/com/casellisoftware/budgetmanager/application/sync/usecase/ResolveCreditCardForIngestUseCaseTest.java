@@ -99,4 +99,42 @@ class ResolveCreditCardForIngestUseCaseTest {
 
         assertThat(result.isFallback()).isTrue();
     }
+
+    // ---------- resolve(ownerId, cardLabel) overload — used by Pluggy materialize ----------
+
+    @Test
+    void resolveByOwnerAndLabel_labelMatches_returnsCreditCard_isFallbackFalse() {
+        CreditCard matched = new CreditCard("cc-1", "Nubank", OWNER);
+        when(creditCardRepository.findByNormalizedLabel("nubank", OWNER))
+                .thenReturn(Optional.of(matched));
+
+        ResolveCreditCardForIngestUseCase.ResolvedCard result = useCase.resolve(OWNER, "NUBANK");
+
+        assertThat(result.card().getId()).isEqualTo("cc-1");
+        assertThat(result.isFallback()).isFalse();
+    }
+
+    @Test
+    void resolveByOwnerAndLabel_nullLabel_usesPlaceholder_isFallbackTrue() {
+        CreditCard placeholder = new CreditCard("ph-1", CreditCard.SYNC_PLACEHOLDER_NAME, OWNER);
+        when(ensurePlaceholder.ensureFor(OWNER)).thenReturn(placeholder);
+
+        ResolveCreditCardForIngestUseCase.ResolvedCard result = useCase.resolve(OWNER, null);
+
+        assertThat(result.card().getId()).isEqualTo("ph-1");
+        assertThat(result.isFallback()).isTrue();
+        verify(creditCardRepository, never()).findByNormalizedLabel(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void resolveViaPendingExpense_delegatesToOwnerAndLabelOverload_behaviorUnchanged() {
+        CreditCard matched = new CreditCard("cc-2", "Bradescard", OWNER);
+        when(creditCardRepository.findByNormalizedLabel("bradescard", OWNER))
+                .thenReturn(Optional.of(matched));
+
+        ResolveCreditCardForIngestUseCase.ResolvedCard result = useCase.resolve(pending("Bradescard"));
+
+        assertThat(result.card().getId()).isEqualTo("cc-2");
+        assertThat(result.isFallback()).isFalse();
+    }
 }

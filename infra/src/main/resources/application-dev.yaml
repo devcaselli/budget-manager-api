@@ -41,7 +41,7 @@ app:
       api-key: ${APP_SYNC_INGEST_API_KEY:vdcp}
       cron:
         enabled: ${APP_SYNC_INGEST_CRON_ENABLED:true}
-        expression: ${APP_SYNC_INGEST_CRON_EXPRESSION:0 */1 11-12 * * *}
+        expression: ${APP_SYNC_INGEST_CRON_EXPRESSION:0 */5 * * * *}
       active-owner-window-days: ${APP_SYNC_INGEST_ACTIVE_WINDOW:7}
       page-size: 100
   pluggy:

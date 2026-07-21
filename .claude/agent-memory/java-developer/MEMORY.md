@@ -1,2 +1,6 @@
 - [Delegation strategy](feedback_delegation_strategy.md) — prefer inline Write/Edit over java-minor-worker when templates already read; subagent cold-start wastes 100k+ tokens per task
 - [Compact before build](feedback_compact_before_build.md) — before each new build task, analyze context cost and warn user if compact advisable; show what retained/discarded
+- [Multi-module test command pitfall](project_multimodule_test_command.md) — `-pl application,infra test` uses stale .m2 jars for upstream modules; install domain/application first after changing their sources
+- [Jackson 3 record DTOs](project_jackson3_record_dtos.md) — Boot 4/Jackson 3: use boxed Boolean (not primitive boolean) for optional REST request-body record fields, else 400 on omission
+- [Pluggy isExpense rule](project_pluggy_isexpense_rule.md) — direction inverts by accountType (CREDIT: amount>0=expense; BANK: amount<0=expense); production-confirmed 2026-07-02
+- [Pluggy update-mode support](project_pluggy_update_mode.md) — connect_token itemId scoping stays flat body, ownership-checked; status polling endpoint added 2026-07-02

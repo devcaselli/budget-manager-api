@@ -218,7 +218,9 @@ class ReservedBudgetControllerTest {
                 List.of(new ReservedBudgetVersionOutput(YearMonth.of(2025, 3), new BigDecimal("2000.00"))),
                 List.of(),
                 false,
-                FlagEnum.NONE
+                FlagEnum.NONE,
+                new BigDecimal("0.00"),
+                new BigDecimal("2000.00")
         );
     }
 
@@ -232,7 +234,9 @@ class ReservedBudgetControllerTest {
                 List.of(new ReservedBudgetVersionResponseDto(YearMonth.of(2025, 3), new BigDecimal("2000.00"))),
                 List.of(),
                 false,
-                FlagEnum.NONE
+                FlagEnum.NONE,
+                new BigDecimal("0.00"),
+                new BigDecimal("2000.00")
         );
     }
 }

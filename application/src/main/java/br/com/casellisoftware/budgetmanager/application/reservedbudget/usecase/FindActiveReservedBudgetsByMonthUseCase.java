@@ -3,6 +3,7 @@ package br.com.casellisoftware.budgetmanager.application.reservedbudget.usecase;
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.FindActiveReservedBudgetsByMonthBoundary;
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.ReservedBudgetOutput;
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.boundary.ReservedBudgetOutputAssembler;
+import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudget;
 import br.com.casellisoftware.budgetmanager.domain.reservedbudget.ReservedBudgetRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +17,12 @@ public class FindActiveReservedBudgetsByMonthUseCase implements FindActiveReserv
     private static final Logger log = LoggerFactory.getLogger(FindActiveReservedBudgetsByMonthUseCase.class);
 
     private final ReservedBudgetRepository reservedBudgetRepository;
+    private final ReservedBudgetConsumptionQuery consumptionQuery;
 
-    public FindActiveReservedBudgetsByMonthUseCase(ReservedBudgetRepository reservedBudgetRepository) {
-        this.reservedBudgetRepository = reservedBudgetRepository;
+    public FindActiveReservedBudgetsByMonthUseCase(ReservedBudgetRepository reservedBudgetRepository,
+                                                   ReservedBudgetConsumptionQuery consumptionQuery) {
+        this.reservedBudgetRepository = Objects.requireNonNull(reservedBudgetRepository);
+        this.consumptionQuery = Objects.requireNonNull(consumptionQuery);
     }
 
     @Override
@@ -29,7 +33,13 @@ public class FindActiveReservedBudgetsByMonthUseCase implements FindActiveReserv
 
         return reservedBudgetRepository.findActiveFor(targetMonth, ownerId)
                 .stream()
-                .map(ReservedBudgetOutputAssembler::from)
+                .map(rb -> toOutput(rb, targetMonth, ownerId))
                 .toList();
+    }
+
+    private ReservedBudgetOutput toOutput(ReservedBudget rb, YearMonth month, String ownerId) {
+        ReservedBudgetConsumptionQuery.ReservedBudgetConsumption consumption =
+                consumptionQuery.consume(rb, month, ownerId);
+        return ReservedBudgetOutputAssembler.from(rb, consumption.consumed(), consumption.remaining());
     }
 }

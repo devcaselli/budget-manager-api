@@ -14,6 +14,7 @@ import br.com.casellisoftware.budgetmanager.application.reservedbudget.usecase.F
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.usecase.FindReservedBudgetByIdUseCase;
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.usecase.LinkReservedBudgetSourceUseCase;
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.usecase.PatchReservedBudgetUseCase;
+import br.com.casellisoftware.budgetmanager.application.reservedbudget.usecase.ReservedBudgetConsumptionQuery;
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.usecase.ReservedBudgetLinkValidationService;
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.usecase.SaveReservedBudgetUseCase;
 import br.com.casellisoftware.budgetmanager.application.reservedbudget.usecase.UnlinkReservedBudgetSourceUseCase;
@@ -51,6 +52,15 @@ public class ReservedBudgetBeanConfiguration {
     }
 
     @Bean
+    public ReservedBudgetConsumptionQuery reservedBudgetConsumptionQuery(
+            SubscriptionRepository subscriptionRepository,
+            InstallmentRepository installmentRepository,
+            ShareRepository shareRepository) {
+        return new ReservedBudgetConsumptionQuery(
+                subscriptionRepository, installmentRepository, shareRepository);
+    }
+
+    @Bean
     public SaveReservedBudgetBoundary saveReservedBudgetBoundary(ReservedBudgetRepository reservedBudgetRepository,
                                                                  Clock clock) {
         SaveReservedBudgetUseCase useCase = new SaveReservedBudgetUseCase(reservedBudgetRepository, clock);
@@ -78,22 +88,31 @@ public class ReservedBudgetBeanConfiguration {
             ReservedBudgetRepository reservedBudgetRepository,
             SubscriptionRepository subscriptionRepository,
             InstallmentRepository installmentRepository,
-            ReservedBudgetLinkValidationService reservedBudgetLinkValidationService) {
+            ReservedBudgetLinkValidationService reservedBudgetLinkValidationService,
+            ReservedBudgetConsumptionQuery reservedBudgetConsumptionQuery,
+            Clock clock) {
         LinkReservedBudgetSourceUseCase useCase = new LinkReservedBudgetSourceUseCase(
-                reservedBudgetRepository, subscriptionRepository, installmentRepository, reservedBudgetLinkValidationService);
+                reservedBudgetRepository, subscriptionRepository, installmentRepository,
+                reservedBudgetLinkValidationService, reservedBudgetConsumptionQuery, clock);
         return new TransactionalLinkReservedBudgetSourceBoundary(useCase);
     }
 
     @Bean
     public UnlinkReservedBudgetSourceBoundary unlinkReservedBudgetSourceBoundary(
-            ReservedBudgetRepository reservedBudgetRepository) {
-        UnlinkReservedBudgetSourceUseCase useCase = new UnlinkReservedBudgetSourceUseCase(reservedBudgetRepository);
+            ReservedBudgetRepository reservedBudgetRepository,
+            ReservedBudgetConsumptionQuery reservedBudgetConsumptionQuery,
+            Clock clock) {
+        UnlinkReservedBudgetSourceUseCase useCase = new UnlinkReservedBudgetSourceUseCase(
+                reservedBudgetRepository, reservedBudgetConsumptionQuery, clock);
         return new TransactionalUnlinkReservedBudgetSourceBoundary(useCase);
     }
 
     @Bean
-    public FindReservedBudgetByIdBoundary findReservedBudgetByIdBoundary(ReservedBudgetRepository reservedBudgetRepository) {
-        return new FindReservedBudgetByIdUseCase(reservedBudgetRepository);
+    public FindReservedBudgetByIdBoundary findReservedBudgetByIdBoundary(
+            ReservedBudgetRepository reservedBudgetRepository,
+            ReservedBudgetConsumptionQuery reservedBudgetConsumptionQuery,
+            Clock clock) {
+        return new FindReservedBudgetByIdUseCase(reservedBudgetRepository, reservedBudgetConsumptionQuery, clock);
     }
 
     @Bean
@@ -102,7 +121,9 @@ public class ReservedBudgetBeanConfiguration {
     }
 
     @Bean
-    public FindActiveReservedBudgetsByMonthBoundary findActiveReservedBudgetsByMonthBoundary(ReservedBudgetRepository reservedBudgetRepository) {
-        return new FindActiveReservedBudgetsByMonthUseCase(reservedBudgetRepository);
+    public FindActiveReservedBudgetsByMonthBoundary findActiveReservedBudgetsByMonthBoundary(
+            ReservedBudgetRepository reservedBudgetRepository,
+            ReservedBudgetConsumptionQuery reservedBudgetConsumptionQuery) {
+        return new FindActiveReservedBudgetsByMonthUseCase(reservedBudgetRepository, reservedBudgetConsumptionQuery);
     }
 }
